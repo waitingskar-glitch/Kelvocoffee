@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ============================================================
+   KELVO DESIGN SYSTEM
+   All colour, type, spacing, radius and shadow tokens live here.
+   Never introduce raw hex values inside components.
+   ============================================================ */
+
+@theme {
+  /* --- Colour ------------------------------------------------ */
+  --color-espresso: #221410;      /* deepest brown, used for text + dark panels */
+  --color-espresso-soft: #35211a; /* raised surfaces on dark panels */
+  --color-coffee: #573521;        /* warm coffee brown */
+  --color-coffee-light: #7d5335;
+  --color-cream: #fbf7f1;         /* page background */
+  --color-cream-deep: #f4ede1;    /* alternating section background */
+  --color-sand: #e9dcc9;          /* soft beige, cards + borders */
+  --color-sand-deep: #dccbb2;
+  --color-caramel: #b0722f;       /* muted amber / caramel, primary accent */
+  --color-caramel-soft: #d59a5a;
+  --color-gold: #c3a26a;          /* very subtle gold, hairlines only */
+  --color-ink: #221410;           /* body text on light */
+  --color-muted: #7b6455;         /* secondary text on light */
+  --color-muted-dark: #b9a494;    /* secondary text on dark */
+
+  /* Per-flavour accents, referenced by the catalog config */
+  --color-flavour-classic: #6b4324;
+  --color-flavour-vanilla: #c9a86a;
+  --color-flavour-hazelnut: #a9663a;
+  --color-flavour-caramel: #b8792f;
+  --color-flavour-whiskey: #8a5a34;
+
+  /* --- Type -------------------------------------------------- */
+  --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Editorial display scale — fluid, mobile-first, never overflows 320px */
+  --text-display-sm: clamp(1.85rem, 1.4rem + 2.2vw, 2.75rem);
+  --text-display-sm--line-height: 1.08;
+  --text-display: clamp(2.35rem, 1.55rem + 4vw, 4.5rem);
+  --text-display--line-height: 1.03;
+  --text-display-lg: clamp(2.7rem, 1.6rem + 5.2vw, 5.5rem);
+  --text-display-lg--line-height: 0.98;
+  --text-eyebrow: 0.7rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.18em;
+
+  /* --- Radius ------------------------------------------------ */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+
+  /* --- Shadow ------------------------------------------------ */
+  --shadow-subtle: 0 1px 2px rgb(34 20 16 / 0.04), 0 2px 8px rgb(34 20 16 / 0.04);
+  --shadow-card: 0 2px 4px rgb(34 20 16 / 0.03), 0 12px 28px -12px rgb(34 20 16 / 0.14);
+  --shadow-lift: 0 4px 8px rgb(34 20 16 / 0.05), 0 24px 48px -16px rgb(34 20 16 / 0.22);
+  --shadow-drawer: -12px 0 48px -12px rgb(34 20 16 / 0.28);
+
+  /* --- Motion ------------------------------------------------ */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* --- Layout ------------------------------------------------ */
+  --spacing-header: 68px;
+  --spacing-gutter: 1.25rem;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+@layer base {
+  :root {
+    color-scheme: light;
+    /* Reusable grain overlay. Static data-URI, costs no extra request. */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+  }
+
+  * {
+    min-width: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Anchor targets clear the sticky header instead of hiding under it. */
+    scroll-padding-top: calc(var(--spacing-header) + 12px);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    /* Guards against any single element pushing the page sideways on mobile. */
+    overflow-x: clip;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-variation-settings: "SOFT" 20, "WONK" 1;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  /* One consistent, high-contrast focus ring everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-caramel);
+    outline-offset: 3px;
+    border-radius: var(--radius-xs);
+  }
+  :focus:not(:focus-visible) { outline: none; }
+
+  ::selection {
+    background: var(--color-caramel);
+    color: var(--color-cream);
+  }
+
+  img { display: block; }
+
+  /* Number inputs / quantity readouts should not shift width as digits change. */
+  .tnum { font-variant-numeric: tabular-nums; }
+}
+
+/* ============================================================
+   COMPONENT PRIMITIVES
+   ============================================================ */
+
+@layer components {
+  .container-page {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 84rem;
+    padding-inline: var(--spacing-gutter);
+  }
+  @media (min-width: 768px)  { .container-page { padding-inline: 2rem; } }
+  @media (min-width: 1280px) { .container-page { padding-inline: 3rem; } }
+
+  /* Grain + warm vignette applied to large surfaces for a printed feel. */
+  .surface-grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--grain);
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+  .surface-grain-light::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--grain);
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  .hairline { border-color: color-mix(in srgb, var(--color-gold) 38%, transparent); }
+}
+
+/* ============================================================
+   MOTION
+   Small, GPU-friendly transforms only (opacity + translate + scale).
+   ============================================================ */
+
+@utility reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.7s var(--ease-out-soft);
+  will-change: opacity, transform;
+}
+@utility reveal-in {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+@keyframes kelvo-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes kelvo-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes kelvo-scale-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes kelvo-slide-right {
+  from { transform: translateX(100%); }
+  to   { transform: none; }
+}
+@keyframes kelvo-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: none; }
+}
+@keyframes kelvo-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+@keyframes kelvo-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes kelvo-drift {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+.animate-fade-up   { animation: kelvo-fade-up 0.8s var(--ease-out-soft) both; }
+.animate-fade-in   { animation: kelvo-fade-in 0.5s var(--ease-out-soft) both; }
+.animate-scale-in  { animation: kelvo-scale-in 0.32s var(--ease-out-soft) both; }
+.animate-slide-right { animation: kelvo-slide-right 0.42s var(--ease-out-soft) both; }
+.animate-slide-up  { animation: kelvo-slide-up 0.42s var(--ease-out-soft) both; }
+.animate-pop       { animation: kelvo-pop 0.42s var(--ease-out-soft); }
+.animate-spin-soft { animation: kelvo-spin 0.7s linear infinite; }
+.animate-drift     { animation: kelvo-drift 7s var(--ease-in-out-soft) infinite; }
+
+/* Scrollbar inside the cart drawer only — keeps the chrome quiet. */
+.scroll-quiet {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-sand-deep) transparent;
+  overscroll-behavior: contain;
+}
