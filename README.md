@@ -178,7 +178,7 @@ customer's expectation is recorded with the order, not just shown in a browser.
 The dispatch window is configured, currently as a rolling promise:
 
 ```
-VITE_PREORDER_SHIP_ESTIMATE=within 4 weeks of ordering
+VITE_PREORDER_SHIP_ESTIMATE=within 2 weeks of ordering
 ```
 
 The value is dropped into "ships ___", so phrase it to follow that. A rolling
