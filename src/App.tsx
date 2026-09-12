@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { CatalogProvider } from './context/CatalogProvider'
 import { CartProvider } from './context/CartProvider'
 import { useCart } from './context/cartContext'
@@ -22,6 +23,7 @@ export default function App() {
     <CatalogProvider>
       <CartProvider>
         <Storefront />
+        <Analytics />
       </CartProvider>
     </CatalogProvider>
   )
