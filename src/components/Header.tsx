@@ -6,15 +6,7 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { Button } from './ui/Button'
 import { CartIcon, CloseIcon, MenuIcon } from './ui/icons'
 import { cn } from '@/lib/cn'
-
-function scrollToSection(hash: string) {
-  const target = document.querySelector(hash)
-  if (!target) return
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  // Move keyboard focus with the viewport so the jump works for AT too.
-  ;(target as HTMLElement).setAttribute('tabindex', '-1')
-  ;(target as HTMLElement).focus({ preventScroll: true })
-}
+import { useSectionNav } from '@/hooks/useSectionNav'
 
 export function Header() {
   const scrolled = useScrolled(10)
@@ -23,6 +15,7 @@ export function Header() {
   const menuButtonRef = useRef<HTMLButtonElement | null>(null)
   const [bump, setBump] = useState(false)
   const previousQuantity = useRef(totalQuantity)
+  const scrollToSection = useSectionNav()
 
   useBodyScrollLock(menuOpen)
 
@@ -46,11 +39,14 @@ export function Header() {
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
 
-  const handleNav = useCallback((event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    event.preventDefault()
-    setMenuOpen(false)
-    scrollToSection(href)
-  }, [])
+  const handleNav = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      event.preventDefault()
+      setMenuOpen(false)
+      scrollToSection(href)
+    },
+    [scrollToSection],
+  )
 
   return (
     <header

@@ -15,21 +15,72 @@ import { StickyMobileCta } from './components/StickyMobileCta'
 import { CartErrorToast } from './components/CartErrorToast'
 import { StructuredData } from './components/StructuredData'
 import { trialPack } from './config/site'
+import { findPolicy } from './config/policies'
+import { RouterProvider, useRouter } from './router'
+import { PolicyPage } from './pages/PolicyPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import type { Product, ProductVariant } from './types/shopify'
 
 export default function App() {
   return (
-    <CatalogProvider>
-      <CartProvider>
-        <Storefront />
-      </CartProvider>
-    </CatalogProvider>
+    <RouterProvider>
+      <CatalogProvider>
+        <CartProvider>
+          <Storefront />
+        </CartProvider>
+      </CatalogProvider>
+    </RouterProvider>
   )
 }
 
+/** Home renders the storefront; every other route renders a content page. */
+function Routes() {
+  const { path } = useRouter()
+
+  if (path === '/' || path === '') return <HomePage />
+
+  const policyMatch = path.match(/^\/policies\/([a-z0-9-]+)$/)
+  if (policyMatch) {
+    const policy = findPolicy(policyMatch[1])
+    if (policy) return <PolicyPage policy={policy} />
+  }
+
+  return <NotFoundPage />
+}
+
 function Storefront() {
-  const [notifyTarget, setNotifyTarget] = useState<NotifyTarget | null>(null)
   const { announcement } = useCart()
+  const { path } = useRouter()
+  const isHome = path === '/' || path === ''
+
+  return (
+    <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:rounded-pill focus:bg-espresso focus:px-5 focus:py-3 focus:text-cream"
+      >
+        Skip to content
+      </a>
+
+      <Header />
+      <Routes />
+      <Footer />
+
+      <CartDrawer />
+      {isHome && <StickyMobileCta />}
+      <CartErrorToast />
+      <StructuredData />
+
+      {/* Single live region for cart changes. */}
+      <p aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </p>
+    </>
+  )
+}
+
+function HomePage() {
+  const [notifyTarget, setNotifyTarget] = useState<NotifyTarget | null>(null)
 
   const requestNotify = useCallback((product: Product | null, variant?: ProductVariant) => {
     setNotifyTarget(
@@ -54,15 +105,6 @@ function Storefront() {
 
   return (
     <>
-      <a
-        href="#shop"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:rounded-pill focus:bg-espresso focus:px-5 focus:py-3 focus:text-cream"
-      >
-        Skip to shop
-      </a>
-
-      <Header />
-
       <main id="main">
         <Hero />
         <ProductGrid onRequestNotify={requestNotify} />
@@ -71,18 +113,8 @@ function Storefront() {
         <BrandSection />
       </main>
 
-      <Footer />
-
-      <CartDrawer />
       <NotifyMeModal target={notifyTarget} onClose={() => setNotifyTarget(null)} />
-      <StickyMobileCta />
-      <CartErrorToast />
-      <StructuredData />
-
-      {/* Single live region for cart changes. */}
-      <p aria-live="polite" aria-atomic="true" className="sr-only">
-        {announcement}
-      </p>
     </>
   )
 }
+

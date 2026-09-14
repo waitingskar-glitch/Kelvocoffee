@@ -1,17 +1,11 @@
 import { footerSections, site, socialLinks } from '@/config/site'
 import { DripIcon } from './ui/icons'
-
-function handleAnchor(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
-  if (!href.startsWith('#')) return
-  event.preventDefault()
-  const target = document.querySelector(href)
-  if (!target) return
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  ;(target as HTMLElement).setAttribute('tabindex', '-1')
-  ;(target as HTMLElement).focus({ preventScroll: true })
-}
+import { Link } from '@/router'
+import { useSectionNav } from '@/hooks/useSectionNav'
 
 export function Footer() {
+  const scrollToSection = useSectionNav()
+
   return (
     <footer className="surface-grain relative overflow-hidden bg-espresso text-cream">
       <div className="container-page relative py-14 sm:py-16 lg:py-20">
@@ -48,13 +42,17 @@ export function Footer() {
                 <ul className="mt-4 flex flex-col gap-2.5">
                   {section.links.map((link) => (
                     <li key={link.label}>
-                      <a
+                      <Link
                         href={link.href}
-                        onClick={(event) => handleAnchor(event, link.href)}
+                        onClick={(event) => {
+                          if (!link.href.startsWith('#')) return
+                          event.preventDefault()
+                          scrollToSection(link.href)
+                        }}
                         className="inline-block rounded-xs py-0.5 text-[0.88rem] text-cream/75 transition-colors hover:text-cream"
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

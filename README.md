@@ -150,6 +150,37 @@ With no endpoint configured the modal validates, logs the payload to the
 console and shows the success state, and a development-only notice makes clear
 that nothing was sent.
 
+## Legal pages
+
+Four routes render in the site's own design, not Shopify's:
+
+```
+/policies/privacy-policy
+/policies/terms-of-service
+/policies/shipping-policy
+/policies/refund-policy
+```
+
+Content lives in [`src/config/policies.ts`](src/config/policies.ts) as plain
+headings and paragraphs — no HTML to fight with. **All four are drafts.**
+Anything still undecided is written as `TO CONFIRM:` and renders as a marked
+callout, so scaffolding can never be mistaken for finished policy. A visitor
+also sees a "not final yet" banner while `isDraft` is true; set it to `false`
+per policy once the text is signed off.
+
+> **Why these are not pulled from Shopify.** The Storefront API returns policy
+> bodies with their Liquid unrendered — `{{ shop_name }}`, and conditionals
+> like `{% if selling_to_europe %}` that depend on flags the API does not
+> expose. Rendering that here would mean guessing whether clauses granting or
+> removing legal rights should appear. Shopify admin → Settings → Policies
+> generates correct full text for free; paste the finished wording into
+> `policies.ts`.
+
+Routing is a ~90-line history router in [`src/router.tsx`](src/router.tsx) —
+five routes did not justify a dependency. `vercel.json` rewrites unknown paths
+to `index.html`; **without it, a direct hit on `/policies/*` 404s in
+production**.
+
 ## Preorders
 
 The store currently sells everything as a **disclosed preorder**: stock is
