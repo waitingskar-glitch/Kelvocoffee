@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '@/context/cartContext'
+import { useRouter } from '@/router'
 import { formatMoney } from '@/lib/format'
 import { Button } from './ui/Button'
 import { cn } from '@/lib/cn'
@@ -12,7 +13,8 @@ import { cn } from '@/lib/cn'
  * summary as soon as there is something in the cart.
  */
 export function StickyMobileCta() {
-  const { cart, totalQuantity, openCart } = useCart()
+  const { cart, totalQuantity } = useCart()
+  const { navigate } = useRouter()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export function StickyMobileCta() {
       aria-hidden={!visible}
     >
       {hasItems && cart ? (
-        <Button fullWidth size="lg" onClick={openCart} tabIndex={visible ? undefined : -1}>
+        <Button fullWidth size="lg" onClick={() => navigate('/cart')} tabIndex={visible ? undefined : -1}>
           <span>View cart · {totalQuantity}</span>
           <span className="tnum opacity-70">{formatMoney(cart.subtotal)}</span>
         </Button>

@@ -5,9 +5,6 @@ export interface CartState {
   cart: Cart | null
   /** Ready once the persisted cart has been restored (or found to be absent). */
   isHydrated: boolean
-  isOpen: boolean
-  openCart: () => void
-  closeCart: () => void
   /** Variant ids currently being added. */
   pendingVariantIds: ReadonlySet<string>
   /** Variant ids that were just added, for the "Added ✓" confirmation. */

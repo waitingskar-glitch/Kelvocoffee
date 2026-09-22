@@ -33,6 +33,8 @@ export interface Product {
   handle: string
   title: string
   description: string
+  /** Merchant-authored HTML from Shopify, rendered on the product page. */
+  descriptionHtml: string
   productType: string
   images: ProductImage[]
   variants: ProductVariant[]

@@ -10,6 +10,7 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
     handle
     title
     description
+    descriptionHtml
     productType
     availableForSale
     images(first: 4) {

@@ -9,13 +9,16 @@ import { HowItWorks } from './components/HowItWorks'
 import { TrialPackSection } from './components/TrialPackSection'
 import { BrandSection } from './components/BrandSection'
 import { Footer } from './components/Footer'
-import { CartDrawer } from './components/CartDrawer'
 import { NotifyMeModal, type NotifyTarget } from './components/NotifyMeModal'
 import { StickyMobileCta } from './components/StickyMobileCta'
 import { CartErrorToast } from './components/CartErrorToast'
 import { StructuredData } from './components/StructuredData'
 import { trialPack } from './config/site'
 import { findPolicy } from './config/policies'
+import { findProductByHandle } from './services/products'
+import { useCatalog } from './context/catalogContext'
+import { ProductPage } from './pages/ProductPage'
+import { CartPage } from './pages/CartPage'
 import { RouterProvider, useRouter } from './router'
 import { PolicyPage } from './pages/PolicyPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -39,6 +42,11 @@ function Routes() {
 
   if (path === '/' || path === '') return <HomePage />
 
+  if (path === '/cart') return <CartPage />
+
+  const productMatch = path.match(/^\/products\/([a-z0-9-]+)$/)
+  if (productMatch) return <ProductRoute handle={productMatch[1]} />
+
   const policyMatch = path.match(/^\/policies\/([a-z0-9-]+)$/)
   if (policyMatch) {
     const policy = findPolicy(policyMatch[1])
@@ -46,6 +54,28 @@ function Routes() {
   }
 
   return <NotFoundPage />
+}
+
+/**
+ * The catalog arrives asynchronously, so a product route can't decide between
+ * "this product" and "no such product" until it has loaded.
+ */
+function ProductRoute({ handle }: { handle: string }) {
+  const { catalog, status } = useCatalog()
+
+  if (status === 'loading') {
+    return (
+      <main id="main" className="pt-[var(--spacing-header)]">
+        <div className="container-page flex min-h-[60vh] items-center">
+          <p className="label text-muted">Loading…</p>
+        </div>
+      </main>
+    )
+  }
+
+  const found = catalog ? findProductByHandle(catalog, handle) : null
+  if (!found) return <NotFoundPage />
+  return <ProductPage product={found.product} meta={found.meta} />
 }
 
 function Storefront() {
@@ -66,7 +96,6 @@ function Storefront() {
       <Routes />
       <Footer />
 
-      <CartDrawer />
       {isHome && <StickyMobileCta />}
       <CartErrorToast />
       <StructuredData />

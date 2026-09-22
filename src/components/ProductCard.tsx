@@ -7,6 +7,7 @@ import { AddToCartButton } from './AddToCartButton'
 import { ProductVariantSelector, shortVariantLabel, variantDetail } from './ProductVariantSelector'
 import { shopifyImage, shopifySrcSet } from '@/lib/image'
 import { cn } from '@/lib/cn'
+import { Link } from '@/router'
 
 interface Props {
   product: Product
@@ -39,14 +40,16 @@ export function ProductCard({ product, meta, index, eager, onRequestNotify }: Pr
         </span>
         <div className="min-w-0">
           <h3 className="font-display text-[1.3rem] leading-tight text-espresso sm:text-[1.45rem]">
-            {meta.name}
+            <Link href={`/products/${product.handle}`} className="transition-opacity hover:opacity-60">
+              {meta.name}
+            </Link>
           </h3>
           <p className="mt-1.5 text-[0.85rem] leading-relaxed text-muted">{meta.blurb}</p>
         </div>
       </div>
 
       {/* --- Photograph --- */}
-      <div className="relative mt-6 overflow-hidden bg-espresso">
+      <Link href={`/products/${product.handle}`} className="relative mt-6 block overflow-hidden bg-espresso">
         <img
           src={image ? shopifyImage(image.url, 800) : meta.image.src}
           srcSet={image ? shopifySrcSet(image.url, [400, 640, 800, 1100]) : meta.image.srcSet}
@@ -70,7 +73,7 @@ export function ProductCard({ product, meta, index, eager, onRequestNotify }: Pr
             Coming soon
           </span>
         )}
-      </div>
+      </Link>
 
       {/* --- Price and action --- */}
       <div className="mt-auto flex flex-col gap-5 px-5 pt-5 pb-5 sm:px-6 sm:pt-6 sm:pb-6">

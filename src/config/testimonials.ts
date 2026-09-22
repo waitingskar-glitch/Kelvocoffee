@@ -37,3 +37,34 @@ export const sampleTestimonials: Testimonial[] = [
     context: 'Neighbourhood, city',
   },
 ]
+
+/* ------------------------------------------------------------------ */
+/* Per-product quotes                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Real quotes for a single product, keyed by its Shopify handle.
+ *
+ * INTENTIONALLY EMPTY, for the same reason as `testimonials` above: nothing
+ * here is invented. Add genuine, attributable quotes and the product page
+ * renders them on its own.
+ *
+ * Example once you have them:
+ *
+ *   'hazelnut-coffee-concentrate': [
+ *     { quote: '…', name: 'Ananya', context: 'Indiranagar' },
+ *   ]
+ *
+ * Keep each to one short line — the layout is built for a single sentence.
+ */
+export const productTestimonials: Record<string, Testimonial[]> = {}
+
+/**
+ * Quotes to show for a product.
+ *
+ * Returns nothing until real, attributable quotes exist for that handle, so
+ * the product page simply omits the section rather than showing placeholders.
+ */
+export function testimonialsForProduct(handle: string): Testimonial[] {
+  return productTestimonials[handle] ?? []
+}

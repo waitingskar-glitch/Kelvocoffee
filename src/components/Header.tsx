@@ -18,7 +18,7 @@ import { cn } from '@/lib/cn'
 export function Header() {
   const scrolled = useScrolled(80)
   const { path } = useRouter()
-  const { totalQuantity, openCart } = useCart()
+  const { totalQuantity } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
   const scrollToSection = useSectionNav()
   const [bump, setBump] = useState(false)
@@ -94,9 +94,9 @@ export function Header() {
           </Link>
 
           <div className="flex items-center gap-6 sm:gap-8">
-            <button
-              type="button"
-              onClick={openCart}
+            <Link
+              href="/cart"
+              onClick={() => setMenuOpen(false)}
               className="label group flex items-baseline gap-1 rounded-xs py-2 transition-opacity hover:opacity-60"
               aria-label={
                 totalQuantity > 0
@@ -111,7 +111,7 @@ export function Header() {
               >
                 {totalQuantity}
               </span>
-            </button>
+            </Link>
 
             <button
               type="button"

@@ -21,7 +21,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const [cart, setCart] = useState<Cart | null>(null)
   const [isHydrated, setIsHydrated] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
   const [pendingVariantIds, setPendingVariantIds] = useState<ReadonlySet<string>>(new Set())
   const [confirmedVariantIds, setConfirmedVariantIds] = useState<ReadonlySet<string>>(new Set())
   const [pendingLineIds, setPendingLineIds] = useState<ReadonlySet<string>>(new Set())
@@ -105,7 +104,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }, CONFIRMATION_MS),
         )
 
-        setIsOpen(true)
         return true
       } catch (caught) {
         handleError(caught, 'Something went wrong while adding this to your cart. Please try again.')
@@ -161,9 +159,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => ({
       cart,
       isHydrated,
-      isOpen,
-      openCart: () => setIsOpen(true),
-      closeCart: () => setIsOpen(false),
       pendingVariantIds,
       confirmedVariantIds,
       pendingLineIds,
@@ -180,7 +175,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [
       cart,
       isHydrated,
-      isOpen,
       pendingVariantIds,
       confirmedVariantIds,
       pendingLineIds,

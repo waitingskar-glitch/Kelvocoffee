@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useCart } from '@/context/cartContext'
+import { useRouter } from '@/router'
 import { CloseIcon } from './ui/icons'
 
 const AUTO_DISMISS_MS = 7000
@@ -11,8 +12,10 @@ const AUTO_DISMISS_MS = 7000
  * because the drawer's own error banner is only rendered while it is open.
  */
 export function CartErrorToast() {
-  const { error, dismissError, isOpen } = useCart()
-  const visible = Boolean(error) && !isOpen
+  const { error, dismissError } = useCart()
+  const { path } = useRouter()
+  // The cart page shows the same error inline, so don't say it twice.
+  const visible = Boolean(error) && path !== '/cart'
 
   useEffect(() => {
     if (!visible) return

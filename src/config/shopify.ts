@@ -38,11 +38,7 @@ export const productHandles = {
   hazelnut: clean(env.VITE_HANDLE_HAZELNUT) || 'hazelnut-coffee-concentrate',
   caramel: clean(env.VITE_HANDLE_CARAMEL) || 'caramel-coffee-concentrate',
   whiskey: clean(env.VITE_HANDLE_WHISKEY) || 'whiskey-coffee-concentrate',
-  /**
-   * The Trial Pack does not exist in Shopify yet. Create it, then set this to
-   * its handle — the Trial Pack section switches from "Notify me" to a real
-   * Add to Cart automatically, with price and availability read from Shopify.
-   */
+  /** Set via VITE_HANDLE_TRIAL_PACK; live in Shopify as `kelvo-trial-pack`. */
   trialPack: clean(env.VITE_HANDLE_TRIAL_PACK),
 } as const
 

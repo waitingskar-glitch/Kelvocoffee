@@ -1,5 +1,5 @@
 import { isShopifyConfigured, productHandles, shopOrder, type FlavourKey } from '@/config/shopify'
-import { flavours, previewCatalog } from '@/config/catalog'
+import { flavours, previewCatalog, type FlavourMeta } from '@/config/catalog'
 import { storefrontFetch } from './storefront'
 import { buildProductsByHandleQuery } from './queries'
 import type { Product, ProductImage, ProductVariant } from '@/types/shopify'
@@ -22,6 +22,7 @@ interface RawProduct {
   handle: string
   title: string
   description: string
+  descriptionHtml: string
   productType: string | null
   availableForSale: boolean
   images: { nodes: Array<{ url: string; altText: string | null; width: number | null; height: number | null }> }
@@ -58,6 +59,7 @@ function normaliseProduct(product: RawProduct, fallbackAlt: string): Product {
     handle: product.handle,
     title: product.title,
     description: product.description,
+    descriptionHtml: product.descriptionHtml,
     productType: product.productType || 'Coffee Concentrate',
     images,
     variants,
@@ -140,6 +142,7 @@ function comingSoonProduct(key: FlavourKey, handle: string): Product {
     handle,
     title: `${meta.name} Concentrate`,
     description: meta.blurb,
+    descriptionHtml: `<p>${meta.blurb}</p>`,
     productType: 'Coffee Concentrate',
     images: [{ url: meta.image.src, altText: meta.image.alt, width: 1100, height: 821 }],
     variants: [],
@@ -164,4 +167,33 @@ function previewResult(): CatalogResult {
 /** Picks the variant a card should start on: the first purchasable one. */
 export function defaultVariant(product: Product): ProductVariant | undefined {
   return product.variants.find((variant) => variant.availableForSale) ?? product.variants[0]
+}
+
+/**
+ * Resolves a product page URL to its product and, for a flavour, its
+ * presentation metadata. The trial pack has no flavour meta.
+ */
+export function findProductByHandle(
+  catalog: CatalogResult,
+  handle: string,
+): { product: Product; meta: FlavourMeta | null } | null {
+  for (const key of shopOrder) {
+    const product = catalog.byFlavour[key]
+    if (product && product.handle === handle) return { product, meta: flavours[key] }
+  }
+  if (catalog.trialPack && catalog.trialPack.handle === handle) {
+    return { product: catalog.trialPack, meta: null }
+  }
+  return null
+}
+
+/** Every product in shop order, trial pack last. Used for cross-links. */
+export function listProducts(catalog: CatalogResult): Array<{ product: Product; meta: FlavourMeta | null }> {
+  const items: Array<{ product: Product; meta: FlavourMeta | null }> = []
+  for (const key of catalog.order) {
+    const product = catalog.byFlavour[key]
+    if (product) items.push({ product, meta: flavours[key] })
+  }
+  if (catalog.trialPack) items.push({ product: catalog.trialPack, meta: null })
+  return items
 }

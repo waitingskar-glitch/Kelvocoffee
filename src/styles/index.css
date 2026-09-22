@@ -184,6 +184,41 @@
     pointer-events: none;
   }
 
+  /* Shopify's own product HTML, styled to match the page. Kept narrow on
+     purpose: only the tags Shopify's editor actually produces. */
+  .prose-kelvo > :first-child { margin-top: 0; }
+  .prose-kelvo > :last-child { margin-bottom: 0; }
+  .prose-kelvo p {
+    margin-block: 0.9em;
+    line-height: 1.75;
+  }
+  .prose-kelvo strong {
+    font-weight: 500;
+    color: var(--color-espresso);
+  }
+  .prose-kelvo ul {
+    margin-block: 1.1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .prose-kelvo li {
+    position: relative;
+    padding-left: 1.15rem;
+  }
+  .prose-kelvo li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 5px;
+    height: 1px;
+    background: var(--color-caramel);
+  }
+  .prose-kelvo a {
+    border-bottom: 1px solid currentColor;
+  }
+
   .hairline { border-color: var(--rule); }
   .hairline-dark { border-color: var(--rule-dark); }
 

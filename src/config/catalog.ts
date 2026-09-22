@@ -163,6 +163,7 @@ export const previewCatalog: Product[] = previewSeeds.map((seed) => ({
   handle: seed.handle,
   title: seed.title,
   description: seed.description,
+  descriptionHtml: `<p>${seed.description}</p>`,
   productType: 'Coffee Concentrate',
   availableForSale: seed.available,
   images: [
