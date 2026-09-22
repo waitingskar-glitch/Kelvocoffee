@@ -14,7 +14,7 @@ export function NotFoundPage() {
   return (
     <main id="main" className="pt-[var(--spacing-header)]">
       <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
-        <p className="text-eyebrow font-semibold text-caramel uppercase">404</p>
+        <p className="label text-caramel">404</p>
         <h1 className="mt-4 max-w-[18ch] text-display-sm text-espresso">
           This page has gone cold.
         </h1>

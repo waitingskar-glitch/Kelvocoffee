@@ -17,7 +17,7 @@ export interface CartState {
   error: string | null
   dismissError: () => void
   canCheckout: boolean
-  addItem: (merchandiseId: string, quantity?: number, fulfilmentNote?: string) => Promise<boolean>
+  addItem: (merchandiseId: string, quantity?: number) => Promise<boolean>
   updateLine: (lineId: string, quantity: number) => Promise<void>
   removeLine: (lineId: string) => Promise<void>
   checkout: () => void

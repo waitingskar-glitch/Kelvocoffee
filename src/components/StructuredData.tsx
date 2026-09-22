@@ -43,7 +43,7 @@ export function StructuredData() {
               offerCount: product.variants.length,
               availability: product.availableForSale
                 ? 'https://schema.org/InStock'
-                : 'https://schema.org/PreOrder',
+                : 'https://schema.org/OutOfStock',
             },
           },
         },

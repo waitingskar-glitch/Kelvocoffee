@@ -181,47 +181,6 @@ five routes did not justify a dependency. `vercel.json` rewrites unknown paths
 to `index.html`; **without it, a direct hit on `/policies/*` 404s in
 production**.
 
-## Preorders
-
-The store currently sells everything as a **disclosed preorder**: stock is
-tracked, quantities are zero, and every variant is set to *continue selling
-when out of stock*.
-
-Shopify reports that state as `availableForSale: true` **and**
-`currentlyNotInStock: true`. The storefront reads both and treats the second as
-the preorder signal (`ProductVariant.isPreorder`), which needs no extra API
-scope. Nothing about preorder status is hardcoded — turn tracking off, or add
-real stock, and the UI reverts to normal selling on its own.
-
-When a variant is a preorder, the shopper is told four times before paying:
-
-| Where | What they see |
-| --- | --- |
-| Product card | A **Preorder** badge, plus the dispatch line under the price |
-| Button | **Preorder** instead of Add to cart |
-| Cart line | The dispatch line, per item |
-| Above Checkout | A panel stating they're charged today and can cancel for a full refund |
-
-The same disclosure is written onto the Shopify cart line as a `Fulfilment`
-attribute, so it lands on the order in the admin and on packing slips — the
-customer's expectation is recorded with the order, not just shown in a browser.
-
-The dispatch window is configured, currently as a rolling promise:
-
-```
-VITE_PREORDER_SHIP_ESTIMATE=within 2 weeks of ordering
-```
-
-The value is dropped into "ships ___", so phrase it to follow that. A rolling
-window never goes stale and doesn't hand late orders an old deadline; a fixed
-date ("mid-November") converts better but has to be met. Blank falls back to
-"we'll email your dispatch date".
-
-> **The refund promise in the cart panel is a commitment.** It reads: charged
-> today, cancel for a full refund any time before dispatch. Edit it in
-> [`src/components/CartDrawer.tsx`](src/components/CartDrawer.tsx) if your
-> policy differs — but don't remove the disclosure itself. Taking payment for
-> goods you can't ship yet is only legitimate when the customer knows.
 
 ## 6. Build for production
 
@@ -283,4 +242,13 @@ scarcity messaging.
   `prefers-reduced-motion`.
 - Images carry explicit `width`/`height` and responsive `srcset`; below-the-fold
   images lazy-load, so there is no layout shift.
-- Runtime dependencies: React and React DOM. Nothing else.
+- Runtime dependencies: React, React DOM, `@vercel/analytics` and `animejs`.
+- The How it works illustration is an anime.js timeline in
+  [`src/components/HowItWorks.tsx`](src/components/HowItWorks.tsx), drawing
+  the layered SVG scene in [`src/components/PourSequence.tsx`](src/components/PourSequence.tsx).
+  The dark panel locks to the screen as its top reaches the header, and scroll
+  scrubs the animation while it is held — half a viewport — before the page
+  carries on, playing in reverse on the way back up. The scene is three depth
+  layers tilted in 3D, swinging round to face the reader as the cup is
+  finished. Visitors who prefer reduced motion get the finished cup, facing
+  forward, with no movement and no lock.

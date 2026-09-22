@@ -25,14 +25,14 @@ export function CartErrorToast() {
   return (
     <div
       role="alert"
-      className="animate-fade-up fixed inset-x-4 bottom-24 z-50 flex items-start gap-3 rounded-md border border-[#c0704f]/40 bg-[#fbeee6] px-4 py-3 text-[0.86rem] text-[#7d3a1c] shadow-lift sm:inset-x-auto sm:right-6 sm:bottom-6 sm:max-w-sm lg:bottom-6"
+      className="animate-fade-up fixed inset-x-4 bottom-24 z-50 flex items-start gap-3 rounded-sm border border-[#c0704f]/50 bg-[#fbeee6] px-4 py-3 text-[0.86rem] text-[#7d3a1c] sm:inset-x-auto sm:right-6 sm:bottom-6 sm:max-w-sm lg:bottom-6"
     >
       <span className="flex-1">{error}</span>
       <button
         type="button"
         onClick={dismissError}
         aria-label="Dismiss"
-        className="-mt-1 -mr-1 grid size-8 shrink-0 place-items-center rounded-pill transition-colors hover:bg-[#7d3a1c]/10"
+        className="-mt-1 -mr-1 grid size-8 shrink-0 place-items-center transition-colors hover:bg-[#7d3a1c]/10"
       >
         <CloseIcon className="size-4" />
       </button>

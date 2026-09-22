@@ -33,7 +33,7 @@ export function ProductVariantSelector({ variants, selectedId, onSelect, legend 
   return (
     <fieldset className="min-w-0">
       <legend className="sr-only">{legend}</legend>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex w-fit flex-wrap gap-px bg-[var(--rule)]">
         {variants.map((variant) => {
           const id = `${name}-${variant.id}`
           const selected = variant.id === selectedId
@@ -53,16 +53,16 @@ export function ProductVariantSelector({ variants, selectedId, onSelect, legend 
               <label
                 htmlFor={id}
                 className={cn(
-                  'flex min-h-10 cursor-pointer items-center gap-1.5 rounded-pill border px-3.5 text-[0.82rem] font-medium transition-all duration-200 ease-[var(--ease-out-soft)]',
-                  'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-caramel',
+                  'label flex min-h-11 cursor-pointer items-center gap-1.5 px-4 transition-colors duration-200 ease-[var(--ease-out-soft)]',
+                  'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-caramel',
                   selected
-                    ? 'border-espresso bg-espresso text-cream'
-                    : 'border-sand-deep bg-transparent text-espresso/80 hover:border-coffee-light hover:text-espresso',
+                    ? 'bg-espresso text-cream'
+                    : 'bg-cream text-espresso/70 hover:text-espresso',
                 )}
               >
                 {shortVariantLabel(variant.title)}
                 {soldOut && (
-                  <span className={cn('text-[0.68rem]', selected ? 'text-cream/60' : 'text-muted')}>
+                  <span className={cn('text-[0.62rem]', selected ? 'text-cream/60' : 'text-muted')}>
                     · sold out
                   </span>
                 )}

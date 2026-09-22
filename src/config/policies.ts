@@ -1,11 +1,11 @@
-import { site, preorder } from './site'
+import { site } from './site'
 
 /**
  * Legal pages.
  *
  * THESE ARE SCAFFOLDS, NOT LEGAL ADVICE. The headings are the ones an Indian
  * D2C store is normally expected to cover, and anything describing Kelvo's own
- * stated practice (the preorder window, the cancellation promise) is real.
+ * stated practice (dispatch, the cancellation promise) is real.
  * Everything marked TO CONFIRM is a decision only you can make.
  *
  * Two ways to finish these:
@@ -116,14 +116,6 @@ export const policies: Policy[] = [
         ],
       },
       {
-        heading: 'Preorders',
-        body: [
-          `Items sold as preorders are paid for at the time of ordering and dispatched ${preorder.shipEstimate}.`,
-          'You may cancel a preorder for a full refund at any time before it is dispatched.',
-          'If we cannot fulfil a preorder we will tell you and refund you in full.',
-        ],
-      },
-      {
         heading: 'Prices and payment',
         body: [
           'Prices are shown in Indian rupees. TO CONFIRM: state whether prices include GST, and how shipping is charged.',
@@ -163,9 +155,9 @@ export const policies: Policy[] = [
         body: ['TO CONFIRM: state the cities, states or countries you deliver to, and anywhere you do not.'],
       },
       {
-        heading: 'Preorder dispatch',
+        heading: 'Dispatch',
         body: [
-          `Everything on the site is currently sold as a preorder and is dispatched ${preorder.shipEstimate}.`,
+          'TO CONFIRM: state how quickly you dispatch an order once it is placed.',
           'We will email you when your order leaves us.',
         ],
       },
@@ -180,7 +172,7 @@ export const policies: Policy[] = [
       {
         heading: 'Delays',
         body: [
-          'If something delays your order beyond the window above, we will contact you with a revised date, and you may cancel for a full refund instead of waiting.',
+          'If something delays your order beyond the times above, we will contact you with a revised date, and you may cancel for a full refund instead of waiting.',
         ],
       },
       {
@@ -199,9 +191,9 @@ export const policies: Policy[] = [
     lastUpdated: 'Not yet published',
     sections: [
       {
-        heading: 'Cancelling a preorder',
+        heading: 'Cancelling an order',
         body: [
-          'You can cancel a preorder for a full refund at any time before it is dispatched.',
+          'TO CONFIRM: state how long a customer has to cancel before an order is dispatched.',
           `Email ${site.email} with your order number and we will process it.`,
         ],
       },

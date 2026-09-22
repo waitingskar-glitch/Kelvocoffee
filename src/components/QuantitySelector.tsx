@@ -22,18 +22,18 @@ export function QuantitySelector({
   max = 99,
 }: Props) {
   const buttonClass =
-    'grid size-10 place-items-center text-espresso transition-colors duration-150 hover:bg-espresso/[0.06] disabled:opacity-35 disabled:hover:bg-transparent'
+    'grid size-11 place-items-center text-espresso transition-colors duration-150 hover:bg-espresso/[0.05] disabled:opacity-35 disabled:hover:bg-transparent'
 
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-pill border border-sand-deep bg-cream',
+        'inline-flex items-center border border-[var(--rule)] bg-cream',
         disabled && 'opacity-60',
       )}
     >
       <button
         type="button"
-        className={cn(buttonClass, 'rounded-l-pill')}
+        className={buttonClass}
         onClick={() => onChange(quantity - 1)}
         disabled={disabled || busy}
         aria-label={quantity === 1 ? `Remove ${itemLabel}` : `Decrease quantity of ${itemLabel}`}
@@ -41,13 +41,13 @@ export function QuantitySelector({
         <MinusIcon className="size-4" />
       </button>
 
-      <span className="tnum grid min-w-8 place-items-center text-[0.88rem] font-medium text-espresso">
+      <span className="index-mark grid min-w-8 place-items-center text-[0.85rem] text-espresso">
         {busy ? <Spinner className="size-3" /> : quantity}
       </span>
 
       <button
         type="button"
-        className={cn(buttonClass, 'rounded-r-pill')}
+        className={buttonClass}
         onClick={() => onChange(quantity + 1)}
         disabled={disabled || busy || quantity >= max}
         aria-label={`Increase quantity of ${itemLabel}`}

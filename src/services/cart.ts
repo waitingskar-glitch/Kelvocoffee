@@ -46,7 +46,6 @@ interface RawCart {
     nodes: Array<{
       id: string
       quantity: number
-      attributes: Array<{ key: string; value: string | null }>
       cost: {
         totalAmount: { amount: string; currencyCode: string }
         amountPerQuantity: { amount: string; currencyCode: string }
@@ -85,9 +84,6 @@ function normaliseCart(raw: RawCart): Cart {
       amount: Number.parseFloat(node.cost.totalAmount.amount),
       currencyCode: node.cost.totalAmount.currencyCode,
     },
-    isPreorder: node.attributes.some(
-      (attribute) => attribute.key === 'Fulfilment' && /preorder/i.test(attribute.value ?? ''),
-    ),
   }))
 
   return {
@@ -122,28 +118,13 @@ async function shopifyLoad(): Promise<Cart | null> {
   return normaliseCart(data.cart)
 }
 
-/**
- * Preorder lines carry a `Fulfilment` attribute so the disclosure the shopper
- * agreed to is recorded on the Shopify order itself, visible in the admin and
- * on the packing slip — not just in the browser.
- */
-function buildLine(merchandiseId: string, quantity: number, fulfilmentNote?: string) {
-  return fulfilmentNote
-    ? { merchandiseId, quantity, attributes: [{ key: 'Fulfilment', value: fulfilmentNote }] }
-    : { merchandiseId, quantity }
-}
-
-async function shopifyAdd(
-  merchandiseId: string,
-  quantity: number,
-  fulfilmentNote?: string,
-): Promise<Cart> {
+async function shopifyAdd(merchandiseId: string, quantity: number): Promise<Cart> {
   const cartId = readCartId()
 
   if (!cartId) {
     const data = await storefrontFetch<{
       cartCreate: { cart: RawCart | null; userErrors: Array<{ message: string }> }
-    }>(CART_CREATE_MUTATION, { lines: [buildLine(merchandiseId, quantity, fulfilmentNote)] })
+    }>(CART_CREATE_MUTATION, { lines: [{ merchandiseId, quantity }] })
     assertNoUserErrors(data.cartCreate.userErrors, ADD_FAILED)
     if (!data.cartCreate.cart) throw new CommerceError('api', ADD_FAILED)
     writeCartId(data.cartCreate.cart.id)
@@ -154,13 +135,13 @@ async function shopifyAdd(
     cartLinesAdd: { cart: RawCart | null; userErrors: Array<{ message: string }> }
   }>(CART_LINES_ADD_MUTATION, {
     cartId,
-    lines: [buildLine(merchandiseId, quantity, fulfilmentNote)],
+    lines: [{ merchandiseId, quantity }],
   })
 
   if (!data.cartLinesAdd.cart) {
     // The stored cart is gone or invalid — retry once with a brand new cart.
     writeCartId(null)
-    return shopifyAdd(merchandiseId, quantity, fulfilmentNote)
+    return shopifyAdd(merchandiseId, quantity)
   }
   assertNoUserErrors(data.cartLinesAdd.userErrors, ADD_FAILED)
   return normaliseCart(data.cartLinesAdd.cart)
@@ -198,7 +179,7 @@ export interface CartService {
   /** True when checkout can hand off to Shopify. */
   readonly canCheckout: boolean
   load(): Promise<Cart | null>
-  add(merchandiseId: string, quantity: number, fulfilmentNote?: string): Promise<Cart>
+  add(merchandiseId: string, quantity: number): Promise<Cart>
   update(lineId: string, quantity: number): Promise<Cart>
   remove(lineId: string): Promise<Cart>
 }

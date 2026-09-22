@@ -90,9 +90,9 @@ function HomePage() {
             variant,
             title: product.title,
             handle: product.handle,
-            // A product that exists but is sold out is a preorder; anything
-            // else is early-access interest.
-            intent: 'preorder',
+            // A product that exists but is sold out gets a restock alert;
+            // anything else is early-access interest.
+            intent: 'restock',
           }
         : {
             product: null,

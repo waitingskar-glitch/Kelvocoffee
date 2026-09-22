@@ -68,7 +68,6 @@ export function previewCart(resolveVariant: VariantResolver): CartService {
           amount: variant.price.amount * stored_.quantity,
           currencyCode: variant.price.currencyCode,
         },
-        isPreorder: variant.isPreorder,
       })
     }
 

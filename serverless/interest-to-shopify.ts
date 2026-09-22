@@ -1,5 +1,5 @@
 /**
- * Kelvo — "Notify me" / preorder capture → Shopify customer records.
+ * Kelvo — "Notify me" capture → Shopify customer records.
  *
  * WHY THIS FILE EXISTS
  * --------------------
@@ -35,7 +35,7 @@ interface InterestPayload {
   name?: string
   email?: string
   phone?: string
-  intent?: 'preorder' | 'interest'
+  intent?: 'restock' | 'interest'
   productHandle?: string
   productTitle?: string
   variantId?: string

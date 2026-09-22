@@ -4,24 +4,27 @@ import { cn } from '@/lib/cn'
 type Variant = 'primary' | 'secondary' | 'ghost' | 'onDark' | 'onDarkOutline'
 type Size = 'sm' | 'md' | 'lg'
 
+/**
+ * Squared and solid. The page is otherwise hairlines and text links, so the
+ * buy action is the one place that deliberately shouts.
+ */
 const base =
-  'relative inline-flex items-center justify-center gap-2 rounded-pill font-medium tracking-[-0.005em] transition-[transform,background-color,color,border-color,box-shadow] duration-200 ease-[var(--ease-out-soft)] select-none disabled:cursor-not-allowed disabled:opacity-55 active:translate-y-px'
+  'relative inline-flex items-center justify-center gap-2.5 rounded-sm font-medium uppercase tracking-[0.14em] transition-[background-color,color,border-color,opacity] duration-250 ease-[var(--ease-out-soft)] select-none disabled:cursor-not-allowed disabled:opacity-55'
 
 const variants: Record<Variant, string> = {
-  primary:
-    'bg-espresso text-cream shadow-subtle hover:bg-coffee hover:shadow-card disabled:hover:bg-espresso',
+  primary: 'bg-espresso text-cream hover:bg-coffee disabled:hover:bg-espresso',
   secondary:
-    'border border-espresso/20 bg-transparent text-espresso hover:border-espresso/45 hover:bg-espresso/[0.04]',
-  ghost: 'text-espresso hover:bg-espresso/[0.06]',
-  onDark: 'bg-cream text-espresso shadow-subtle hover:bg-white',
-  onDarkOutline: 'border border-cream/30 text-cream hover:border-cream/60 hover:bg-cream/10',
+    'border border-[color-mix(in_srgb,var(--color-espresso)_28%,transparent)] text-espresso hover:border-espresso',
+  ghost: 'text-espresso hover:opacity-60',
+  onDark: 'bg-cream text-espresso hover:bg-white',
+  onDarkOutline: 'border border-[var(--rule-dark)] text-cream hover:border-cream',
 }
 
 const sizes: Record<Size, string> = {
-  // 44px+ tap targets on every size — thumb-friendly on mobile.
-  sm: 'min-h-11 px-4 text-[0.85rem]',
-  md: 'min-h-12 px-6 text-[0.925rem]',
-  lg: 'min-h-13 px-7 text-[0.975rem] sm:min-h-14 sm:px-8 sm:text-base',
+  // 44px+ tap targets throughout, thumb-friendly on mobile.
+  sm: 'min-h-11 px-4 text-[0.7rem]',
+  md: 'min-h-12 px-6 text-[0.72rem]',
+  lg: 'min-h-13 px-7 text-[0.75rem] sm:min-h-14 sm:px-8',
 }
 
 interface CommonProps {

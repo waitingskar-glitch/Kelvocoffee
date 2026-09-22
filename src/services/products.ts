@@ -13,7 +13,6 @@ interface RawVariant {
   id: string
   title: string
   availableForSale: boolean
-  currentlyNotInStock: boolean
   selectedOptions: Array<{ name: string; value: string }>
   price: RawMoney
   compareAtPrice: RawMoney | null
@@ -40,7 +39,6 @@ function normaliseVariant(variant: RawVariant): ProductVariant {
     price: normaliseMoney(variant.price),
     compareAtPrice: variant.compareAtPrice ? normaliseMoney(variant.compareAtPrice) : null,
     availableForSale: variant.availableForSale,
-    isPreorder: variant.availableForSale && variant.currentlyNotInStock === true,
     selectedOptions: Object.fromEntries(variant.selectedOptions.map((o) => [o.name, o.value])),
   }
 }

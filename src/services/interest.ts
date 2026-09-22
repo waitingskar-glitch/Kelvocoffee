@@ -1,5 +1,5 @@
 /**
- * Preorder / notify-me submissions.
+ * Notify-me submissions.
  *
  * Submissions are POSTed as JSON to `VITE_PREORDER_ENDPOINT`. The shape is
  * provider-agnostic and works with Formspree, Klaviyo, Brevo, a custom API, or
@@ -18,8 +18,8 @@ export interface InterestSubmission {
   name: string
   email: string
   phone?: string
-  /** "preorder" for an unavailable product, "interest" for launching soon. */
-  intent: 'preorder' | 'interest'
+  /** "restock" for a sold-out product, "interest" for something not launched. */
+  intent: 'restock' | 'interest'
   productHandle: string
   productTitle: string
   variantId?: string

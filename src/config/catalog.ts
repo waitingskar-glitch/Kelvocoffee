@@ -93,7 +93,6 @@ function previewVariants(handleSeed: string, available: boolean) {
       price: { amount: 150, currencyCode: PREVIEW_CURRENCY },
       compareAtPrice: null,
       availableForSale: available,
-      isPreorder: false,
       selectedOptions: { Quantity: '50 ml - 5 servings' },
     },
     {
@@ -102,7 +101,6 @@ function previewVariants(handleSeed: string, available: boolean) {
       price: { amount: 220, currencyCode: PREVIEW_CURRENCY },
       compareAtPrice: null,
       availableForSale: available,
-      isPreorder: false,
       selectedOptions: { Quantity: '100 ml - 10 servings' },
     },
   ]

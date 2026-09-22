@@ -3,10 +3,9 @@ import { formatMoney } from '@/lib/format'
 import { Overlay } from './ui/Overlay'
 import { Button } from './ui/Button'
 import { QuantitySelector } from './QuantitySelector'
-import { CloseIcon, ArrowRightIcon, DripIcon } from './ui/icons'
+import { ArrowRightIcon, DripIcon } from './ui/icons'
 import { shortVariantLabel } from './ProductVariantSelector'
 import { shopifyImage, shopifySrcSet } from '@/lib/image'
-import { preorder, preorderNote } from '@/config/site'
 import type { CartLine } from '@/types/shopify'
 
 export function CartDrawer() {
@@ -26,7 +25,6 @@ export function CartDrawer() {
 
   const lines = cart?.lines ?? []
   const isEmpty = isHydrated && lines.length === 0
-  const hasPreorderLines = lines.some((line) => line.isPreorder)
 
   return (
     <Overlay
@@ -34,20 +32,19 @@ export function CartDrawer() {
       onClose={closeCart}
       labelledById="cart-heading"
       /* Bottom sheet on mobile, right-hand drawer from `sm` up. */
-      panelClassName="animate-slide-up sm:animate-slide-right inset-x-0 bottom-0 top-[12vh] flex w-full flex-col rounded-t-xl bg-cream shadow-drawer sm:inset-y-0 sm:top-0 sm:right-0 sm:left-auto sm:h-full sm:w-[26rem] sm:rounded-none lg:w-[28rem]"
+      panelClassName="animate-slide-up sm:animate-slide-right inset-x-0 bottom-0 top-[10vh] flex w-full flex-col border-l border-[var(--rule)] bg-cream sm:inset-y-0 sm:top-0 sm:right-0 sm:left-auto sm:h-full sm:w-[27rem] lg:w-[30rem]"
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 border-b border-espresso/10 px-5 py-4 sm:px-6 sm:py-5">
-        <h2 id="cart-heading" className="font-display text-[1.35rem] leading-none text-espresso">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--rule)] px-5 py-5 sm:px-6">
+        <h2 id="cart-heading" className="label text-espresso">
           Your coffee cart
         </h2>
         <button
           type="button"
           onClick={closeCart}
-          className="-mr-2 grid size-10 place-items-center rounded-pill text-espresso transition-colors hover:bg-espresso/[0.06]"
-          aria-label="Close cart"
+          className="label -mr-1 rounded-xs py-1 text-espresso transition-opacity hover:opacity-60"
         >
-          <CloseIcon className="size-5" />
+          Close
         </button>
       </div>
 
@@ -56,7 +53,7 @@ export function CartDrawer() {
         {error && (
           <div
             role="alert"
-            className="mt-4 flex items-start justify-between gap-3 rounded-md border border-[#c0704f]/40 bg-[#fbeee6] px-4 py-3 text-[0.85rem] text-[#7d3a1c]"
+            className="mt-4 flex items-start justify-between gap-3 rounded-sm border border-[#c0704f]/40 bg-[#fbeee6] px-4 py-3 text-[0.85rem] text-[#7d3a1c]"
           >
             <span>{error}</span>
             <button
@@ -73,11 +70,11 @@ export function CartDrawer() {
           <ul className="space-y-4 py-6" aria-hidden="true">
             {Array.from({ length: 2 }).map((_, index) => (
               <li key={index} className="flex gap-4">
-                <div className="size-20 shrink-0 animate-pulse rounded-md bg-sand" />
+                <div className="size-20 shrink-0 animate-pulse bg-sand" />
                 <div className="flex flex-1 flex-col gap-2 py-1">
-                  <div className="h-4 w-2/3 animate-pulse rounded-xs bg-sand" />
-                  <div className="h-3 w-1/3 animate-pulse rounded-xs bg-sand" />
-                  <div className="mt-auto h-8 w-24 animate-pulse rounded-pill bg-sand" />
+                  <div className="h-4 w-2/3 animate-pulse bg-sand" />
+                  <div className="h-3 w-1/3 animate-pulse bg-sand" />
+                  <div className="mt-auto h-8 w-24 animate-pulse bg-sand" />
                 </div>
               </li>
             ))}
@@ -87,7 +84,7 @@ export function CartDrawer() {
         {isEmpty && <EmptyCart onClose={closeCart} />}
 
         {lines.length > 0 && (
-          <ul className="divide-y divide-espresso/[0.08]">
+          <ul className="divide-y divide-[var(--rule)]">
             {lines.map((line) => (
               <CartLineRow
                 key={line.id}
@@ -103,10 +100,10 @@ export function CartDrawer() {
 
       {/* Footer */}
       {lines.length > 0 && cart && (
-        <div className="border-t border-espresso/10 bg-cream px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pt-5 sm:pb-6">
+        <div className="border-t border-[var(--rule)] bg-cream px-5 pt-5 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6">
           <div className="flex items-baseline justify-between gap-4">
-            <span className="text-[0.9rem] text-muted">Subtotal</span>
-            <span className="tnum font-display text-[1.5rem] leading-none text-espresso">
+            <span className="label text-muted">Subtotal</span>
+            <span className="index-mark font-display text-[1.6rem] leading-none text-espresso">
               {formatMoney(cart.subtotal)}
             </span>
           </div>
@@ -114,16 +111,6 @@ export function CartDrawer() {
             Shipping and taxes are calculated at checkout.
           </p>
 
-          {hasPreorderLines && (
-            /* Last chance to see it before paying — stated plainly, not buried. */
-            <p className="mt-3 rounded-md border border-gold/40 bg-cream-deep px-3.5 py-2.5 text-[0.78rem] leading-relaxed text-espresso">
-              <strong className="font-medium">This is a preorder.</strong>{' '}
-              {preorder.shipEstimate
-                ? `Your order is dispatched ${preorder.shipEstimate}.`
-                : "We'll email you a dispatch date after you order."}{' '}
-              You're charged today, and you can cancel for a full refund any time before it ships.
-            </p>
-          )}
 
           <Button
             fullWidth
@@ -162,7 +149,7 @@ function CartLineRow({
 
   return (
     <li className="flex gap-4 py-5">
-      <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-md bg-espresso sm:size-22">
+      <div className="grid size-20 shrink-0 place-items-center overflow-hidden bg-espresso sm:size-22">
         {line.image ? (
           <img
             src={shopifyImage(line.image.url, 176)}
@@ -189,9 +176,6 @@ function CartLineRow({
               {line.productTitle}
             </h3>
             <p className="mt-0.5 text-[0.78rem] text-muted">{line.variantTitle}</p>
-            {line.isPreorder && (
-              <p className="mt-1 text-[0.74rem] font-medium text-caramel">{preorderNote()}</p>
-            )}
           </div>
           <span className="tnum shrink-0 text-[0.95rem] font-medium text-espresso">
             {formatMoney(line.lineTotal)}
@@ -212,7 +196,7 @@ function CartLineRow({
             type="button"
             onClick={() => onRemove(line.id)}
             disabled={busy}
-            className="rounded-xs px-1 py-1 text-[0.78rem] text-muted underline underline-offset-3 transition-colors hover:text-espresso disabled:opacity-50"
+            className="link-underline rounded-xs text-[0.76rem] text-muted transition-opacity hover:opacity-60 disabled:opacity-50"
           >
             Remove
           </button>
@@ -226,7 +210,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
       <span
-        className="grid size-14 place-items-center rounded-pill border border-dashed border-sand-deep text-muted"
+        className="grid size-14 place-items-center border border-dashed border-[var(--rule)] text-muted"
         aria-hidden="true"
       >
         <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth={1.4}>

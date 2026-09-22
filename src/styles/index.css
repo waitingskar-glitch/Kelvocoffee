@@ -39,25 +39,36 @@
   --text-display-sm--line-height: 1.08;
   --text-display: clamp(2.35rem, 1.55rem + 4vw, 4.5rem);
   --text-display--line-height: 1.03;
-  --text-display-lg: clamp(2.7rem, 1.6rem + 5.2vw, 5.5rem);
-  --text-display-lg--line-height: 0.98;
-  --text-eyebrow: 0.7rem;
+  --text-display-lg: clamp(2.9rem, 1.6rem + 6vw, 6.5rem);
+  --text-display-lg--line-height: 0.96;
+  --text-eyebrow: 0.68rem;
   --text-eyebrow--line-height: 1;
-  --text-eyebrow--letter-spacing: 0.18em;
+  --text-eyebrow--letter-spacing: 0.22em;
 
-  /* --- Radius ------------------------------------------------ */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
-  --radius-pill: 999px;
+  /* Wordmark and section labels: uppercase, widely tracked. */
+  --text-label: 0.72rem;
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.16em;
 
-  /* --- Shadow ------------------------------------------------ */
-  --shadow-subtle: 0 1px 2px rgb(34 20 16 / 0.04), 0 2px 8px rgb(34 20 16 / 0.04);
-  --shadow-card: 0 2px 4px rgb(34 20 16 / 0.03), 0 12px 28px -12px rgb(34 20 16 / 0.14);
-  --shadow-lift: 0 4px 8px rgb(34 20 16 / 0.05), 0 24px 48px -16px rgb(34 20 16 / 0.22);
-  --shadow-drawer: -12px 0 48px -12px rgb(34 20 16 / 0.28);
+  /* --- Radius ------------------------------------------------
+     Squared off. Edges are drawn with hairlines, not corners. --- */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-pill: 999px; /* retained only for the cart count badge */
+
+  /* --- Shadow ------------------------------------------------
+     Near-flat. Depth comes from hairlines and flooded colour. --- */
+  --shadow-subtle: none;
+  --shadow-card: none;
+  --shadow-lift: none;
+  --shadow-drawer: -1px 0 0 0 rgb(34 20 16 / 0.12);
+
+  /* --- Rules -------------------------------------------------- */
+  --rule: color-mix(in srgb, var(--color-espresso) 12%, transparent);
+  --rule-dark: color-mix(in srgb, var(--color-cream) 18%, transparent);
 
   /* --- Motion ------------------------------------------------ */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -173,7 +184,49 @@
     pointer-events: none;
   }
 
-  .hairline { border-color: color-mix(in srgb, var(--color-gold) 38%, transparent); }
+  .hairline { border-color: var(--rule); }
+  .hairline-dark { border-color: var(--rule-dark); }
+
+  /* Escapes `container-page` to run an element to the viewport edges. */
+  .full-bleed {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+  }
+
+  /* Editorial section label: uppercase, widely tracked, hairline above. */
+  .label {
+    font-size: var(--text-label);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Index notation — [1], [2] — used down the product list and steps. */
+  .index-mark {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+  }
+
+  /* Quiet link: the reference's default action, in place of a button. */
+  .link-underline {
+    position: relative;
+    padding-bottom: 2px;
+    border-bottom: 1px solid currentColor;
+    transition: opacity 0.25s var(--ease-out-soft);
+  }
+  .link-underline:hover { opacity: 0.6; }
+
+  /* Horizontal product rail that still snaps on touch. */
+  .rail {
+    display: grid;
+    grid-auto-flow: column;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
 }
 
 /* ============================================================

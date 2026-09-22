@@ -15,7 +15,7 @@ export function Field({ label, hint, error, className, ...rest }: FieldProps) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="flex items-baseline justify-between gap-3 text-[0.8rem] font-medium text-espresso">
+      <label htmlFor={id} className="label flex items-baseline justify-between gap-3 text-espresso">
         <span>{label}</span>
         {hint && <span className="text-[0.72rem] font-normal text-muted">{hint}</span>}
       </label>
@@ -24,8 +24,8 @@ export function Field({ label, hint, error, className, ...rest }: FieldProps) {
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         className={cn(
-          'min-h-12 rounded-md border bg-cream px-3.5 text-[0.95rem] text-espresso transition-colors duration-150 placeholder:text-muted/60',
-          error ? 'border-[#a4442c]' : 'border-sand-deep hover:border-coffee-light/60 focus:border-caramel',
+          'min-h-12 rounded-sm border bg-cream px-3.5 text-[0.95rem] text-espresso transition-colors duration-150 placeholder:text-muted/60',
+          error ? 'border-[#a4442c]' : 'border-[var(--rule)] hover:border-coffee-light/60 focus:border-caramel',
           className,
         )}
         {...rest}

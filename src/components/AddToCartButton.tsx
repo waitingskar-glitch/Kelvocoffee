@@ -1,5 +1,4 @@
 import { useCart } from '@/context/cartContext'
-import { preorderNote } from '@/config/site'
 import { Button } from './ui/Button'
 import { BellIcon, CheckIcon } from './ui/icons'
 import { Spinner } from './ui/Spinner'
@@ -11,14 +10,14 @@ interface Props {
   size?: 'sm' | 'md' | 'lg'
   variantStyle?: 'primary' | 'onDark'
   fullWidth?: boolean
-  /** Opens the notify/preorder modal when the variant cannot be bought. */
+  /** Opens the notify-me modal when the variant cannot be bought. */
   onRequestNotify: (product: Product, variant?: ProductVariant) => void
 }
 
 /**
  * The single add-to-cart control used across the page.
  *
- * Swaps to a notify/preorder action whenever Shopify says the variant is not
+ * Swaps to a notify-me action whenever Shopify says the variant is not
  * purchasable, so unavailable products still capture demand.
  */
 export function AddToCartButton({
@@ -32,7 +31,6 @@ export function AddToCartButton({
   const { addItem, pendingVariantIds, confirmedVariantIds } = useCart()
 
   const unavailable = !variant || !variant.availableForSale
-  const isPreorder = Boolean(variant?.isPreorder)
   const isPending = variant ? pendingVariantIds.has(variant.id) : false
   const isConfirmed = variant ? confirmedVariantIds.has(variant.id) : false
 
@@ -56,7 +54,7 @@ export function AddToCartButton({
       fullWidth={fullWidth}
       variant={variantStyle === 'onDark' ? 'onDark' : 'primary'}
       disabled={isPending}
-      onClick={() => void addItem(variant.id, 1, isPreorder ? preorderNote() : undefined)}
+      onClick={() => void addItem(variant.id, 1)}
     >
       {isPending ? (
         <>
@@ -68,8 +66,6 @@ export function AddToCartButton({
           <CheckIcon className="size-4" />
           Added
         </>
-      ) : isPreorder ? (
-        'Preorder'
       ) : (
         'Add to cart'
       )}

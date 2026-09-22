@@ -12,7 +12,7 @@ import { Overlay } from './ui/Overlay'
 import { Button } from './ui/Button'
 import { Field } from './ui/Field'
 import { Spinner } from './ui/Spinner'
-import { CloseIcon, CheckIcon } from './ui/icons'
+import { CheckIcon } from './ui/icons'
 
 export interface NotifyTarget {
   /** Null when the product does not exist in Shopify yet (e.g. the trial pack). */
@@ -21,7 +21,7 @@ export interface NotifyTarget {
   /** Display name used in the copy. */
   title: string
   handle: string
-  intent: 'preorder' | 'interest'
+  intent: 'restock' | 'interest'
 }
 
 interface Props {
@@ -32,9 +32,9 @@ interface Props {
 type Status = 'idle' | 'submitting' | 'done'
 
 /**
- * Reusable preorder / notify-me capture.
+ * Reusable notify-me capture.
  *
- * Used for any product Shopify reports as unavailable, and for products that
+ * Used for any product Shopify reports as sold out, and for products that
  * do not exist in the store yet. Posts to `VITE_PREORDER_ENDPOINT`; see
  * `src/services/interest.ts`.
  */
@@ -60,7 +60,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
 
   if (!target) return null
 
-  const isPreorder = target.intent === 'preorder'
+  const isRestock = target.intent === 'restock'
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -103,12 +103,12 @@ export function NotifyMeModal({ target, onClose }: Props) {
       onClose={onClose}
       labelledById="notify-heading"
       describedById="notify-description"
-      panelClassName="animate-scale-in inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-xl bg-cream p-6 shadow-lift sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:w-[27rem] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg sm:p-8"
+      panelClassName="animate-scale-in inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto border-t border-[var(--rule)] bg-cream p-6 sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:w-[28rem] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:border sm:p-9"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-eyebrow font-semibold text-caramel uppercase">
-            {isPreorder ? 'Preorder' : 'Early access'}
+          <p className="label text-caramel">
+            {isRestock ? 'Back in stock' : 'Early access'}
           </p>
           <h2 id="notify-heading" className="mt-3 font-display text-[1.6rem] leading-tight text-espresso">
             {status === 'done' ? "You're on the list." : `Be first to get ${target.title}.`}
@@ -117,10 +117,9 @@ export function NotifyMeModal({ target, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="-mt-1 -mr-2 grid size-10 shrink-0 place-items-center rounded-pill text-espresso transition-colors hover:bg-espresso/[0.06]"
-          aria-label="Close"
+          className="label -mt-1 -mr-1 shrink-0 rounded-xs py-1 text-espresso transition-opacity hover:opacity-60"
         >
-          <CloseIcon className="size-5" />
+          Close
         </button>
       </div>
 
@@ -129,7 +128,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
           <p id="notify-description" className="text-[0.95rem] leading-relaxed text-muted">
             We&rsquo;ll let you know the moment it&rsquo;s ready. No newsletter, no noise.
           </p>
-          <div className="mt-6 flex items-center gap-2.5 rounded-md border border-gold/40 bg-cream-deep px-4 py-3 text-[0.88rem] text-espresso">
+          <div className="mt-6 flex items-center gap-2.5 rounded-sm border border-[var(--rule)] bg-cream-deep px-4 py-3 text-[0.88rem] text-espresso">
             <CheckIcon className="size-4 shrink-0 text-caramel" />
             Saved against {target.title}.
           </div>
@@ -141,8 +140,8 @@ export function NotifyMeModal({ target, onClose }: Props) {
       ) : (
         <form onSubmit={handleSubmit} noValidate className="mt-5">
           <p id="notify-description" className="text-[0.93rem] leading-relaxed text-muted">
-            {isPreorder
-              ? `${target.title} is not in stock right now. Leave your details and we'll reserve you one when it's back.`
+            {isRestock
+              ? `${target.title} is out of stock right now. Leave your details and we'll email you the moment it's back.`
               : `${target.title} isn't out yet. Leave your details and you'll hear before anyone else.`}
           </p>
 

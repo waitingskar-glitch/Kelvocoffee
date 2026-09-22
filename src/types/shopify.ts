@@ -24,12 +24,6 @@ export interface ProductVariant {
   price: Money
   compareAtPrice?: Money | null
   availableForSale: boolean
-  /**
-   * Purchasable, but nothing is in stock — Shopify's "continue selling when
-   * out of stock" state. This is what makes a line a preorder rather than a
-   * normal sale, and it must always be disclosed to the shopper.
-   */
-  isPreorder: boolean
   /** e.g. { Quantity: "50 ml - 5 servings" } */
   selectedOptions: Record<string, string>
 }
@@ -56,8 +50,6 @@ export interface CartLine {
   image: ProductImage | null
   unitPrice: Money
   lineTotal: Money
-  /** True when this line was added as a disclosed preorder. */
-  isPreorder: boolean
 }
 
 export interface Cart {

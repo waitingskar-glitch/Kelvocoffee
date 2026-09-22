@@ -30,14 +30,14 @@ export function PolicyPage({ policy }: { policy: Policy }) {
 
           <h1 className="mt-6 text-display-sm text-espresso">{policy.title}</h1>
           <p className="mt-3 text-[1rem] leading-relaxed text-muted">{policy.summary}</p>
-          <p className="mt-4 text-[0.78rem] tracking-[0.08em] text-muted uppercase">
+          <p className="label mt-5 text-muted">
             Last updated · {policy.lastUpdated}
           </p>
 
           {policy.isDraft && (
             <div
               role="note"
-              className="mt-8 rounded-md border border-caramel/50 bg-cream-deep px-5 py-4"
+              className="mt-8 rounded-sm border border-caramel/50 bg-cream-deep px-5 py-4"
             >
               <p className="text-[0.88rem] font-medium text-espresso">
                 This policy is not final yet.
@@ -72,7 +72,7 @@ export function PolicyPage({ policy }: { policy: Policy }) {
           </div>
 
           <nav aria-label="Other policies" className="mt-16 border-t border-espresso/[0.1] pt-8">
-            <h2 className="text-eyebrow font-semibold text-caramel uppercase">Other policies</h2>
+            <h2 className="label text-caramel">Other policies</h2>
             <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
               {others.map((item) => (
                 <li key={item.handle}>
@@ -99,7 +99,7 @@ export function PolicyPage({ policy }: { policy: Policy }) {
 function Paragraph({ text }: { text: string }) {
   if (text.startsWith('TO CONFIRM:')) {
     return (
-      <p className="rounded-sm border-l-2 border-dashed border-caramel/60 bg-cream-deep/60 py-2 pl-4 text-[0.86rem] leading-relaxed text-coffee">
+      <p className="border-l-2 border-dashed border-caramel/60 bg-cream-deep/60 py-2.5 pl-4 text-[0.86rem] leading-relaxed text-coffee">
         <span className="font-medium tracking-[0.06em] text-caramel uppercase">To confirm — </span>
         {text.replace('TO CONFIRM:', '').trim()}
       </p>

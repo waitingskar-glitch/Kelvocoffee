@@ -25,7 +25,6 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
         id
         title
         availableForSale
-        currentlyNotInStock
         selectedOptions {
           name
           value
@@ -77,10 +76,6 @@ const CART_FRAGMENT = /* GraphQL */ `
       nodes {
         id
         quantity
-        attributes {
-          key
-          value
-        }
         cost {
           totalAmount {
             amount

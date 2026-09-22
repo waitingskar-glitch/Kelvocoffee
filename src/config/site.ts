@@ -49,36 +49,6 @@ export const trialPack = {
   flavourKeys: ['vanilla', 'whiskey', 'hazelnut', 'caramel'] as const,
 } as const
 
-/**
- * Preorder disclosure.
- *
- * When Shopify reports a variant as purchasable but out of stock, the site
- * sells it as a preorder — and says so, everywhere the shopper can see:
- * on the button, on the card, in the cart, and on the order line itself.
- *
- * Set VITE_PREORDER_SHIP_ESTIMATE to a real dispatch window (e.g.
- * "mid-November") as soon as you have one. Taking payment is only fair if the
- * customer knows what they are waiting for.
- */
-const DEFAULT_SHIP_ESTIMATE = 'within 2 weeks of ordering'
-
-export const preorder = {
-  /**
-   * Copy, not configuration — so it lives in code and ships with a push.
-   * The env var stays as an override for a temporary change (a holiday
-   * backlog, say) without a deploy, but leave it unset in normal operation.
-   */
-  shipEstimate:
-    ((env.VITE_PREORDER_SHIP_ESTIMATE as string | undefined) ?? '').trim() ||
-    DEFAULT_SHIP_ESTIMATE,
-} as const
-
-export function preorderNote(): string {
-  return preorder.shipEstimate
-    ? `Preorder · ships ${preorder.shipEstimate}`
-    : "Preorder · we'll email your dispatch date"
-}
-
 export const footerSections = [
   {
     title: 'Shop',

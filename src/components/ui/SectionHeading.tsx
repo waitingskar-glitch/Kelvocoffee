@@ -7,48 +7,33 @@ interface Props {
   title: ReactNode
   description?: ReactNode
   id?: string
-  align?: 'start' | 'center'
   tone?: 'light' | 'dark'
   className?: string
 }
 
-/** Consistent editorial section opener: eyebrow, display heading, standfirst. */
-export function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  id,
-  align = 'start',
-  tone = 'light',
-  className,
-}: Props) {
+/**
+ * Editorial section opener: a tracked uppercase label sitting on a hairline,
+ * then the display heading beneath it.
+ */
+export function SectionHeading({ eyebrow, title, description, id, tone = 'light', className }: Props) {
   const { ref, isVisible } = useReveal<HTMLDivElement>()
 
   return (
-    <div
-      ref={ref}
-      className={cn(
-        'reveal',
-        isVisible && 'reveal-in',
-        align === 'center' && 'mx-auto text-center',
-        className,
-      )}
-    >
+    <div ref={ref} className={cn('reveal', isVisible && 'reveal-in', className)}>
       <p
         className={cn(
-          'flex items-center gap-2.5 text-eyebrow font-semibold uppercase',
-          align === 'center' && 'justify-center',
-          tone === 'dark' ? 'text-caramel-soft' : 'text-caramel',
+          'label border-t pt-4',
+          tone === 'dark'
+            ? 'border-[var(--rule-dark)] text-caramel-soft'
+            : 'border-[var(--rule)] text-caramel',
         )}
       >
-        <span className="h-px w-6 bg-current opacity-50" aria-hidden="true" />
         {eyebrow}
       </p>
       <h2
         id={id}
         className={cn(
-          'mt-4 max-w-[19ch] text-display-sm sm:max-w-[22ch]',
-          align === 'center' && 'mx-auto',
+          'mt-6 max-w-[18ch] text-display-sm',
           tone === 'dark' ? 'text-cream' : 'text-espresso',
         )}
       >
@@ -57,8 +42,7 @@ export function SectionHeading({
       {description && (
         <p
           className={cn(
-            'mt-4 max-w-[46ch] text-[0.97rem] leading-relaxed sm:text-[1.03rem]',
-            align === 'center' && 'mx-auto',
+            'mt-4 max-w-[44ch] text-[0.97rem] leading-relaxed sm:text-[1.02rem]',
             tone === 'dark' ? 'text-muted-dark' : 'text-muted',
           )}
         >

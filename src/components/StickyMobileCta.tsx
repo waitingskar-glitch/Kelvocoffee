@@ -45,7 +45,7 @@ export function StickyMobileCta() {
   return (
     <div
       className={cn(
-        'fixed inset-x-0 bottom-0 z-40 border-t border-espresso/10 bg-cream/94 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl transition-transform duration-300 ease-[var(--ease-out-soft)] lg:hidden',
+        'fixed inset-x-0 bottom-0 z-40 border-t border-[var(--rule)] bg-cream/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl transition-transform duration-300 ease-[var(--ease-out-soft)] lg:hidden',
         visible ? 'translate-y-0' : 'translate-y-[130%]',
       )}
       aria-hidden={!visible}
