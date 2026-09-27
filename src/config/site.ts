@@ -13,7 +13,7 @@ export const site = {
   /** The document title every page restores when it unmounts. */
   defaultTitle: 'Kelvo Coffee | Coffee, but make it your flavour.',
   /** Set VITE_SITE_URL in production for canonical + Open Graph URLs. */
-  url: (typeof env.VITE_SITE_URL === 'string' && env.VITE_SITE_URL.trim()) || 'https://kelvocoffee.com',
+  url: (typeof env.VITE_SITE_URL === 'string' && env.VITE_SITE_URL.trim()) || 'https://kelvocoffee.in',
   city: 'Bengaluru',
   email: (typeof env.VITE_CONTACT_EMAIL === 'string' && env.VITE_CONTACT_EMAIL.trim()) || 'hello@kelvocoffee.com',
 } as const
