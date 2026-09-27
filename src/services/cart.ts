@@ -7,7 +7,7 @@ import {
   CART_LINES_UPDATE_MUTATION,
   CART_LINES_REMOVE_MUTATION,
 } from './queries'
-import { CommerceError, type Cart, type CartLine } from '@/types/shopify'
+import { CommerceError, type Cart, type CartAttribute, type CartLine } from '@/types/shopify'
 import { previewCart, type VariantResolver } from './previewCart'
 
 const CART_ID_KEY = 'kelvo:cart-id'
@@ -46,6 +46,7 @@ interface RawCart {
     nodes: Array<{
       id: string
       quantity: number
+      attributes?: Array<{ key: string; value: string }>
       cost: {
         totalAmount: { amount: string; currencyCode: string }
         amountPerQuantity: { amount: string; currencyCode: string }
@@ -84,6 +85,7 @@ function normaliseCart(raw: RawCart): Cart {
       amount: Number.parseFloat(node.cost.totalAmount.amount),
       currencyCode: node.cost.totalAmount.currencyCode,
     },
+    attributes: node.attributes ?? [],
   }))
 
   return {
@@ -118,13 +120,15 @@ async function shopifyLoad(): Promise<Cart | null> {
   return normaliseCart(data.cart)
 }
 
-async function shopifyAdd(merchandiseId: string, quantity: number): Promise<Cart> {
+async function shopifyAdd(merchandiseId: string, quantity: number, attributes: CartAttribute[] = []): Promise<Cart> {
   const cartId = readCartId()
+  // Line notes (a hamper's flavours) travel with the line to the order.
+  const line = attributes.length > 0 ? { merchandiseId, quantity, attributes } : { merchandiseId, quantity }
 
   if (!cartId) {
     const data = await storefrontFetch<{
       cartCreate: { cart: RawCart | null; userErrors: Array<{ message: string }> }
-    }>(CART_CREATE_MUTATION, { lines: [{ merchandiseId, quantity }] })
+    }>(CART_CREATE_MUTATION, { lines: [line] })
     assertNoUserErrors(data.cartCreate.userErrors, ADD_FAILED)
     if (!data.cartCreate.cart) throw new CommerceError('api', ADD_FAILED)
     writeCartId(data.cartCreate.cart.id)
@@ -135,13 +139,13 @@ async function shopifyAdd(merchandiseId: string, quantity: number): Promise<Cart
     cartLinesAdd: { cart: RawCart | null; userErrors: Array<{ message: string }> }
   }>(CART_LINES_ADD_MUTATION, {
     cartId,
-    lines: [{ merchandiseId, quantity }],
+    lines: [line],
   })
 
   if (!data.cartLinesAdd.cart) {
     // The stored cart is gone or invalid — retry once with a brand new cart.
     writeCartId(null)
-    return shopifyAdd(merchandiseId, quantity)
+    return shopifyAdd(merchandiseId, quantity, attributes)
   }
   assertNoUserErrors(data.cartLinesAdd.userErrors, ADD_FAILED)
   return normaliseCart(data.cartLinesAdd.cart)
@@ -179,7 +183,7 @@ export interface CartService {
   /** True when checkout can hand off to Shopify. */
   readonly canCheckout: boolean
   load(): Promise<Cart | null>
-  add(merchandiseId: string, quantity: number): Promise<Cart>
+  add(merchandiseId: string, quantity: number, attributes?: CartAttribute[]): Promise<Cart>
   update(lineId: string, quantity: number): Promise<Cart>
   remove(lineId: string): Promise<Cart>
 }

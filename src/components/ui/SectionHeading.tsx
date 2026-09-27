@@ -3,52 +3,24 @@ import { useReveal } from '@/hooks/useReveal'
 import { cn } from '@/lib/cn'
 
 interface Props {
-  eyebrow: string
   title: ReactNode
-  description?: ReactNode
+  intro?: ReactNode
   id?: string
-  tone?: 'light' | 'dark'
   className?: string
 }
 
 /**
- * Editorial section opener: a tracked uppercase label sitting on a hairline,
- * then the display heading beneath it.
+ * Section H2 (80% of the hero H1) and its intro, centred. Below the hero the
+ * site reads on one centre line, like the reference.
  */
-export function SectionHeading({ eyebrow, title, description, id, tone = 'light', className }: Props) {
+export function SectionHeading({ title, intro, id, className }: Props) {
   const { ref, isVisible } = useReveal<HTMLDivElement>()
-
   return (
-    <div ref={ref} className={cn('reveal', isVisible && 'reveal-in', className)}>
-      <p
-        className={cn(
-          'label border-t pt-4',
-          tone === 'dark'
-            ? 'border-[var(--rule-dark)] text-caramel-soft'
-            : 'border-[var(--rule)] text-caramel',
-        )}
-      >
-        {eyebrow}
-      </p>
-      <h2
-        id={id}
-        className={cn(
-          'mt-6 max-w-[18ch] text-display-sm',
-          tone === 'dark' ? 'text-cream' : 'text-espresso',
-        )}
-      >
+    <div ref={ref} className={cn('reveal text-center', isVisible && 'reveal-in', className)}>
+      <h2 id={id} className="text-h2 mx-auto max-w-[14ch]">
         {title}
       </h2>
-      {description && (
-        <p
-          className={cn(
-            'mt-4 max-w-[44ch] text-[0.97rem] leading-relaxed sm:text-[1.02rem]',
-            tone === 'dark' ? 'text-muted-dark' : 'text-muted',
-          )}
-        >
-          {description}
-        </p>
-      )}
+      {intro && <p className="mx-auto mt-5 max-w-[46ch] text-[1.08rem] leading-relaxed sm:text-[1.15rem]">{intro}</p>}
     </div>
   )
 }

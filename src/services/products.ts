@@ -72,7 +72,8 @@ export interface CatalogResult {
   byFlavour: Partial<Record<FlavourKey, Product>>
   /** Flavours in shop order that actually resolved to a product. */
   order: FlavourKey[]
-  trialPack: Product | null
+  /** The build-your-own hampers, once they exist in Shopify (null until then). */
+  hampers: { duo: Product | null; four: Product | null }
   /** True when the data came from the preview seed rather than Shopify. */
   isPreview: boolean
 }
@@ -88,13 +89,12 @@ export async function fetchCatalog(): Promise<CatalogResult> {
     return previewResult()
   }
 
-  const entries: Array<{ key: FlavourKey | 'trialPack'; handle: string }> = []
+  const entries: Array<{ key: FlavourKey | 'duoHamper' | 'fourHamper'; handle: string }> = []
   for (const key of shopOrder) {
     if (productHandles[key]) entries.push({ key, handle: productHandles[key] })
   }
-  if (productHandles.trialPack) {
-    entries.push({ key: 'trialPack', handle: productHandles.trialPack })
-  }
+  entries.push({ key: 'duoHamper', handle: productHandles.duoHamper })
+  entries.push({ key: 'fourHamper', handle: productHandles.fourHamper })
 
   const query = buildProductsByHandleQuery(entries.map((entry) => entry.handle))
   // One automatic retry: a transient Shopify blip should not put an error
@@ -102,30 +102,33 @@ export async function fetchCatalog(): Promise<CatalogResult> {
   const data = await storefrontFetch<Record<string, RawProduct | null>>(query, {}, { retries: 1 })
 
   const byFlavour: Partial<Record<FlavourKey, Product>> = {}
-  let trialPack: Product | null = null
+  const hampers: CatalogResult['hampers'] = { duo: null, four: null }
 
   entries.forEach((entry, index) => {
     const raw = data[`p${index}`]
+    // The hampers simply stay absent until they're created and published.
+    if (entry.key === 'duoHamper' || entry.key === 'fourHamper') {
+      if (raw) hampers[entry.key === 'duoHamper' ? 'duo' : 'four'] = normaliseProduct(raw, raw.title)
+      return
+    }
     if (!raw) {
       // Storefront returns null for products that are draft or unpublished
       // from the Online Store channel. Rather than dropping the flavour, show
       // it as coming soon so the card can still capture interest.
       console.warn(
-        `[kelvo] No published Shopify product for handle "${entry.handle}". ` +
-          'Rendering it as coming soon.',
+        `[kelvo] No published Shopify product for handle "${entry.handle}". ` + 'Rendering it as coming soon.',
       )
-      if (entry.key !== 'trialPack') byFlavour[entry.key] = comingSoonProduct(entry.key, entry.handle)
+      byFlavour[entry.key] = comingSoonProduct(entry.key, entry.handle)
       return
     }
     const product = normaliseProduct(raw, `${raw.title} pouch`)
-    if (entry.key === 'trialPack') trialPack = product
-    else byFlavour[entry.key] = product
+    byFlavour[entry.key] = product
   })
 
   return {
     byFlavour,
     order: shopOrder.filter((key) => byFlavour[key] !== undefined),
-    trialPack,
+    hampers,
     isPreview: false,
   }
 }
@@ -144,7 +147,7 @@ function comingSoonProduct(key: FlavourKey, handle: string): Product {
     description: meta.blurb,
     descriptionHtml: `<p>${meta.blurb}</p>`,
     productType: 'Coffee Concentrate',
-    images: [{ url: meta.image.src, altText: meta.image.alt, width: 1100, height: 821 }],
+    images: [{ url: meta.image.src, altText: meta.image.alt, width: meta.image.width, height: meta.image.height }],
     variants: [],
     availableForSale: false,
   }
@@ -159,7 +162,7 @@ function previewResult(): CatalogResult {
   return {
     byFlavour,
     order: shopOrder.filter((key) => byFlavour[key] !== undefined),
-    trialPack: null,
+    hampers: { duo: null, four: null },
     isPreview: true,
   }
 }
@@ -169,31 +172,24 @@ export function defaultVariant(product: Product): ProductVariant | undefined {
   return product.variants.find((variant) => variant.availableForSale) ?? product.variants[0]
 }
 
-/**
- * Resolves a product page URL to its product and, for a flavour, its
- * presentation metadata. The trial pack has no flavour meta.
- */
+/** Resolves a product page URL to its flavour's product and presentation metadata. */
 export function findProductByHandle(
   catalog: CatalogResult,
   handle: string,
-): { product: Product; meta: FlavourMeta | null } | null {
+): { product: Product; meta: FlavourMeta } | null {
   for (const key of shopOrder) {
     const product = catalog.byFlavour[key]
     if (product && product.handle === handle) return { product, meta: flavours[key] }
   }
-  if (catalog.trialPack && catalog.trialPack.handle === handle) {
-    return { product: catalog.trialPack, meta: null }
-  }
   return null
 }
 
-/** Every product in shop order, trial pack last. Used for cross-links. */
-export function listProducts(catalog: CatalogResult): Array<{ product: Product; meta: FlavourMeta | null }> {
-  const items: Array<{ product: Product; meta: FlavourMeta | null }> = []
+/** Every flavour's product, in shop order. Used for cross-links. */
+export function listProducts(catalog: CatalogResult): Array<{ product: Product; meta: FlavourMeta }> {
+  const items: Array<{ product: Product; meta: FlavourMeta }> = []
   for (const key of catalog.order) {
     const product = catalog.byFlavour[key]
     if (product) items.push({ product, meta: flavours[key] })
   }
-  if (catalog.trialPack) items.push({ product: catalog.trialPack, meta: null })
   return items
 }

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { Cart } from '@/types/shopify'
+import type { Cart, CartAttribute } from '@/types/shopify'
 
 export interface CartState {
   cart: Cart | null
@@ -14,7 +14,7 @@ export interface CartState {
   error: string | null
   dismissError: () => void
   canCheckout: boolean
-  addItem: (merchandiseId: string, quantity?: number) => Promise<boolean>
+  addItem: (merchandiseId: string, quantity?: number, attributes?: CartAttribute[]) => Promise<boolean>
   updateLine: (lineId: string, quantity: number) => Promise<void>
   removeLine: (lineId: string) => Promise<void>
   checkout: () => void

@@ -2,45 +2,39 @@ import { useId } from 'react'
 import type { ProductVariant } from '@/types/shopify'
 import { cn } from '@/lib/cn'
 
-/** "50 ml - 5 servings" → "50 ml". Keeps pills readable at 320px. */
+/** "50 ml - 5 servings" → "50 ml". */
 export function shortVariantLabel(title: string): string {
   return title.split(/\s+-\s+/)[0]?.trim() || title
 }
 
-/** "50 ml - 5 servings" → "5 servings", when present. */
+/** "50 ml - 5 servings" → "5 cups". The pack's own word is cups. */
 export function variantDetail(title: string): string | null {
   const parts = title.split(/\s+-\s+/)
-  return parts.length > 1 ? parts.slice(1).join(' - ').trim() : null
+  if (parts.length < 2) return null
+  return parts.slice(1).join(' - ').trim().replace(/servings?/i, (m) => (m.endsWith('s') ? 'cups' : 'cup'))
 }
 
 interface Props {
   variants: ProductVariant[]
   selectedId: string
   onSelect: (variantId: string) => void
-  /** Accessible group name, e.g. "Size for Classic". */
   legend: string
 }
 
-/**
- * Size selector built on real radio inputs so keyboard and screen-reader
- * behaviour comes from the platform rather than being reimplemented.
- */
+/** Size pills built on real radio inputs, so keyboard behaviour is native. */
 export function ProductVariantSelector({ variants, selectedId, onSelect, legend }: Props) {
   const name = useId()
-
   if (variants.length < 2) return null
 
   return (
     <fieldset className="min-w-0">
       <legend className="sr-only">{legend}</legend>
-      <div className="flex w-fit flex-wrap gap-px bg-[var(--rule)]">
+      <div className="flex flex-wrap gap-2">
         {variants.map((variant) => {
           const id = `${name}-${variant.id}`
           const selected = variant.id === selectedId
-          const soldOut = !variant.availableForSale
-
           return (
-            <div key={variant.id} className="min-w-0">
+            <div key={variant.id}>
               <input
                 type="radio"
                 id={id}
@@ -53,19 +47,14 @@ export function ProductVariantSelector({ variants, selectedId, onSelect, legend 
               <label
                 htmlFor={id}
                 className={cn(
-                  'label flex min-h-11 cursor-pointer items-center gap-1.5 px-4 transition-colors duration-200 ease-[var(--ease-out-soft)]',
-                  'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-caramel',
-                  selected
-                    ? 'bg-espresso text-cream'
-                    : 'bg-cream text-espresso/70 hover:text-espresso',
+                  'flex min-h-11 cursor-pointer items-center gap-1.5 shape-squircle border-2 border-ink px-4 text-[0.92rem] font-bold transition-colors',
+                  'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink',
+                  selected ? 'bg-ink text-paper' : 'hover:bg-ink/[0.08]',
+                  !variant.availableForSale && 'line-through',
                 )}
               >
                 {shortVariantLabel(variant.title)}
-                {soldOut && (
-                  <span className={cn('text-[0.62rem]', selected ? 'text-cream/60' : 'text-muted')}>
-                    · sold out
-                  </span>
-                )}
+                {!variant.availableForSale && <span className="sr-only">(sold out)</span>}
               </label>
             </div>
           )

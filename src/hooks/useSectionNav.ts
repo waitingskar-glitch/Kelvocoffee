@@ -1,24 +1,25 @@
 import { useCallback } from 'react'
 import { useRouter } from '@/router'
+import { smoothScrollToElement } from '@/lib/smoothScroll'
 
 /**
  * Navigates to a section of the home page from anywhere on the site.
  *
- * On the home page it just scrolls. From a policy page the section does not
- * exist yet, so it routes home first and scrolls once the page has mounted.
+ * On the home page it glides there. From another page the home page fades in
+ * first (see the router's page transition), then it glides down.
  */
 export function useSectionNav() {
   const { path, navigate } = useRouter()
 
   return useCallback(
-    (hash: string) => {
+    async (hash: string) => {
       const scrollToSection = () => {
-        const target = document.querySelector(hash)
+        const target = document.querySelector<HTMLElement>(hash)
         if (!target) return
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' })
         // Move keyboard focus with the viewport so the jump works for AT too.
-        ;(target as HTMLElement).setAttribute('tabindex', '-1')
-        ;(target as HTMLElement).focus({ preventScroll: true })
+        target.setAttribute('tabindex', '-1')
+        target.focus({ preventScroll: true })
+        void smoothScrollToElement(target)
       }
 
       if (path === '/') {
@@ -26,9 +27,9 @@ export function useSectionNav() {
         return
       }
 
-      navigate('/')
-      // Two frames: one for React to commit the home page, one for layout.
-      requestAnimationFrame(() => requestAnimationFrame(scrollToSection))
+      await navigate('/')
+      // One frame for layout to settle after the page has swapped in.
+      requestAnimationFrame(scrollToSection)
     },
     [path, navigate],
   )

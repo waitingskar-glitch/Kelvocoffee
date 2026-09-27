@@ -6,27 +6,19 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import { useRouter, Link } from '@/router'
 import { policies } from '@/config/policies'
+import { Wordmark } from './ui/Wordmark'
+import { CartIcon, CloseIcon, MenuIcon } from './ui/icons'
 import { cn } from '@/lib/cn'
+import { smoothScrollTo } from '@/lib/smoothScroll'
 
-/**
- * Minimal editorial header: wordmark, cart count, Menu.
- *
- * It sits over the hero rather than above it, so the image runs to the top of
- * the viewport. Over the hero it is transparent with cream type; once scrolled
- * past, it lands on a cream bar with a hairline under it.
- */
 export function Header() {
-  const scrolled = useScrolled(80)
-  const { path } = useRouter()
+  const scrolled = useScrolled(12)
+  const { path, navigate } = useRouter()
   const { totalQuantity } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
   const scrollToSection = useSectionNav()
   const [bump, setBump] = useState(false)
   const previousQuantity = useRef(totalQuantity)
-
-  const isHome = path === '/' || path === ''
-  // Only the home page has a dark hero for the header to sit on.
-  const overHero = isHome && !scrolled
 
   useBodyScrollLock(menuOpen)
 
@@ -41,76 +33,82 @@ export function Header() {
 
   useEffect(() => {
     if (!menuOpen) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false)
-    }
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setMenuOpen(false)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
+
+  // Close the menu whenever the route changes underneath it.
+  useEffect(() => setMenuOpen(false), [path])
 
   const handleNav = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
       event.preventDefault()
       setMenuOpen(false)
-      scrollToSection(href)
+      if (href.startsWith('#')) scrollToSection(href)
+      else void navigate(href)
     },
-    [scrollToSection],
+    [scrollToSection, navigate],
   )
-
-  // The menu overlay is flooded espresso, so the header must stay cream on it.
-  const tone = overHero || menuOpen ? 'text-cream' : 'text-espresso'
 
   return (
     <>
-      <header
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 transition-[background-color,border-color] duration-500 ease-[var(--ease-out-soft)]',
-          'border-b',
-          menuOpen
-            ? 'border-transparent bg-transparent'
-            : overHero
-              ? 'border-transparent bg-transparent'
-              : 'border-[var(--rule)] bg-cream/95 backdrop-blur-xl',
-        )}
-      >
+      <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 [view-transition-name:site-header] sm:px-4 sm:pt-4">
         <div
           className={cn(
-            'container-page flex h-[var(--spacing-header)] items-center justify-between gap-6 transition-colors duration-500',
-            tone,
+            'kv-grain ground-paper mx-auto flex h-[calc(var(--spacing-header)-12px)] max-w-[75rem] items-center justify-between gap-6 rounded-lg px-4 transition-shadow duration-300 sm:px-6',
+            scrolled || menuOpen ? 'shadow-[0_2px_0_0_rgb(27_25_24_/_0.12)]' : '',
           )}
         >
           <Link
             href="/"
             onClick={(event) => {
-              if (!isHome) return
-              event.preventDefault()
               setMenuOpen(false)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
+              if (path !== '/') return
+              event.preventDefault()
+              void smoothScrollTo(0)
             }}
-            className="label -ml-0.5 shrink-0 rounded-xs px-0.5 py-1 font-display text-[0.95rem] tracking-[0.24em] transition-opacity hover:opacity-60 sm:text-[1.05rem]"
-            aria-label={`${site.name} — home`}
+            className="-ml-1 shrink-0 rounded-xs p-1"
+            aria-label={`${site.name}, home`}
           >
-            KELVO
+            <Wordmark className="w-[104px] sm:w-[118px]" />
           </Link>
 
-          <div className="flex items-center gap-6 sm:gap-8">
+          <nav aria-label="Primary" className="hidden lg:block">
+            <ul className="flex items-center gap-1">
+              {navLinks.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    onClick={(event) => handleNav(event, link.href)}
+                    className="shape-squircle px-4 py-2 text-[0.98rem] font-semibold transition-colors hover:bg-ink/[0.06]"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="flex items-center gap-1.5">
             <Link
               href="/cart"
               onClick={() => setMenuOpen(false)}
-              className="label group flex items-baseline gap-1 rounded-xs py-2 transition-opacity hover:opacity-60"
-              aria-label={
-                totalQuantity > 0
-                  ? `Open cart, ${totalQuantity} item${totalQuantity === 1 ? '' : 's'}`
-                  : 'Open cart, empty'
-              }
+              className="relative grid size-11 place-items-center shape-squircle transition-colors hover:bg-ink/[0.06]"
+              aria-label={totalQuantity > 0 ? `Cart, ${totalQuantity} item${totalQuantity === 1 ? '' : 's'}` : 'Cart, empty'}
             >
-              Cart
-              <span
-                className={cn('index-mark text-[0.62rem] align-super', bump && 'animate-pop')}
-                aria-hidden="true"
-              >
-                {totalQuantity}
-              </span>
+              <CartIcon className="size-6" />
+              {totalQuantity > 0 && (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'tnum absolute -top-0.5 -right-0.5 grid min-w-[1.3rem] place-items-center rounded-pill bg-ink px-1 py-0.5 text-[0.7rem] leading-none font-bold text-paper',
+                    bump && 'animate-pop',
+                  )}
+                >
+                  {totalQuantity}
+                </span>
+              )}
             </Link>
 
             <button
@@ -118,87 +116,52 @@ export function Header() {
               onClick={() => setMenuOpen((open) => !open)}
               aria-expanded={menuOpen}
               aria-controls="site-menu"
-              className="label rounded-xs py-2 transition-opacity hover:opacity-60"
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              className="grid size-11 place-items-center shape-squircle transition-colors hover:bg-ink/[0.06] lg:hidden"
             >
-              {menuOpen ? 'Close' : 'Menu'}
+              {menuOpen ? <CloseIcon className="size-6" /> : <MenuIcon className="size-6" />}
             </button>
           </div>
         </div>
       </header>
 
-      <MenuOverlay
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        onNavigate={handleNav}
-      />
-    </>
-  )
-}
-
-function MenuOverlay({
-  open,
-  onClose,
-  onNavigate,
-}: {
-  open: boolean
-  onClose: () => void
-  onNavigate: (event: React.MouseEvent<HTMLAnchorElement>, href: string) => void
-}) {
-  if (!open) return null
-
-  return (
-    <div
-      id="site-menu"
-      className="animate-fade-in fixed inset-0 z-40 bg-espresso text-cream"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Menu"
-    >
-      <div className="container-page flex h-full flex-col justify-between pt-[calc(var(--spacing-header)+3rem)] pb-10 sm:pb-14">
-        <nav aria-label="Primary">
-          <ul className="flex flex-col">
-            {navLinks.map((link, index) => (
-              <li key={link.label} className="border-t border-[var(--rule-dark)] last:border-b">
-                <a
-                  href={link.href}
-                  onClick={(event) => onNavigate(event, link.href)}
-                  className="animate-fade-up group flex items-baseline gap-5 py-5 sm:py-7"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <span className="index-mark label shrink-0 text-caramel-soft opacity-80">
-                    [{index + 1}]
-                  </span>
-                  <span className="font-display text-[2rem] leading-none transition-opacity group-hover:opacity-60 sm:text-[3rem] lg:text-[3.75rem]">
-                    {link.label}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <ul className="flex flex-wrap gap-x-5 gap-y-2">
-            {policies.map((policy) => (
-              <li key={policy.handle}>
-                <Link
-                  href={`/policies/${policy.handle}`}
-                  onClick={onClose}
-                  className="label text-cream/55 transition-colors hover:text-cream"
-                >
-                  {policy.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <a
-            href={`mailto:${site.email}`}
-            className="link-underline label self-start text-cream/80 sm:self-auto"
-          >
-            {site.email}
-          </a>
+      {menuOpen && (
+        <div
+          id="site-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          className="kv-surface ground-caramel animate-fade-in fixed inset-0 z-40 overflow-y-auto lg:hidden"
+        >
+          <div className="container-page flex min-h-full flex-col justify-between pt-[calc(var(--spacing-header)+2.5rem)] pb-10">
+            <nav aria-label="Mobile">
+              <ul className="flex flex-col gap-1">
+                {navLinks.map((link, index) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      onClick={(event) => handleNav(event, link.href)}
+                      className="animate-fade-up block py-2 font-display text-[2.9rem] leading-[1.05]"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      {link.label}.
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <ul className="mt-12 flex flex-col gap-2.5">
+              {policies.map((policy) => (
+                <li key={policy.handle}>
+                  <Link href={`/policies/${policy.handle}`} onClick={() => setMenuOpen(false)} className="label">
+                    {policy.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   )
 }

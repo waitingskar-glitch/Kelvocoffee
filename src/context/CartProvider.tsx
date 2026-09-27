@@ -79,11 +79,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addItem = useCallback<CartState['addItem']>(
-    async (merchandiseId, quantity = 1) => {
+    async (merchandiseId, quantity = 1, attributes) => {
       setError(null)
       withSet(setPendingVariantIds, merchandiseId, true)
       try {
-        const next = await service.add(merchandiseId, quantity)
+        const next = await service.add(merchandiseId, quantity, attributes)
         setCart(next)
 
         const line = next.lines.find((l) => l.merchandiseId === merchandiseId)

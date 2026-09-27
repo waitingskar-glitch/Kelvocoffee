@@ -6,81 +6,77 @@ import { SectionHeading } from './ui/SectionHeading'
 import { Reveal } from './ui/Reveal'
 import { Button } from './ui/Button'
 import { useSectionNav } from '@/hooks/useSectionNav'
+import type { FlavourKey } from '@/config/shopify'
+import { cn } from '@/lib/cn'
 
 interface Props {
   onRequestNotify: (product: Product, variant?: ProductVariant) => void
 }
 
-/**
- * SECTION 2 — Shop.
- *
- * Products sit in a hairline-ruled grid rather than floating cards: one rule
- * between each, edges flush. This is where the page turns commercial.
- */
+/** SECTION 3 — The range, after the claims strip. */
 export function ProductGrid({ onRequestNotify }: Props) {
   const { catalog, status, error, retry } = useCatalog()
   const scrollTo = useSectionNav()
 
   return (
-    <section
-      id="shop"
-      aria-labelledby="shop-heading"
-      className="scroll-mt-20 bg-cream py-16 sm:py-20 lg:py-24"
-    >
-      <div className="container-page">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <SectionHeading
-            id="shop-heading"
-            eyebrow="The range"
-            title="Pick your kind of coffee."
-            description="One base brew, five directions. Every pouch is the same easy pour — the difference is what you're in the mood for."
-            className="lg:max-w-xl"
-          />
-          <Reveal delay={0.08}>
-            <button
-              type="button"
-              onClick={() => scrollTo('#trial-pack')}
-              className="link-underline label text-espresso"
-            >
-              Not sure? Start with all four
-            </button>
-          </Reveal>
-        </div>
-      </div>
+    <section id="shop" aria-labelledby="shop-heading" className="container-page scroll-mt-24 pt-16 pb-12 sm:py-20">
+      <SectionHeading
+        id="shop-heading"
+        title={
+          <>
+            Five flavours.
+            <br />
+            One pour.
+          </>
+        }
+        intro="Same coffee underneath. Pick the one you're in the mood for."
+      />
 
-      <div className="container-page mt-12 sm:mt-16">
-        {status === 'loading' && <GridSkeleton />}
+      <div className="mt-12 sm:mt-16">
+        {status === 'loading' && (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <li key={index} className="h-[36rem] animate-pulse rounded-xl bg-ink/[0.06]" />
+            ))}
+          </ul>
+        )}
 
         {status === 'error' && (
-          <div className="border-t border-[var(--rule)] py-16 text-center">
-            <h3 className="font-display text-[1.4rem] text-espresso">Our coffee is hiding</h3>
-            <p className="mx-auto mt-2 max-w-[38ch] text-[0.92rem] text-muted">{error}</p>
-            <Button className="mt-6" onClick={retry}>
+          <div className="kv-surface ground-vanilla rounded-xl px-6 py-14">
+            <h3 className="text-display-sm">Our coffee is hiding.</h3>
+            <p className="mt-3 max-w-[40ch] text-[1.05rem]">{error}</p>
+            <Button className="mt-7" onClick={retry}>
               Try again
             </Button>
           </div>
         )}
 
         {status === 'ready' && catalog && (
-          /* The gap is the rule: a hairline background shows through it. */
-          <ul className="grid grid-cols-1 gap-px border border-[var(--rule)] bg-[var(--rule)] sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {catalog.order.map((key, index) => {
               const product = catalog.byFlavour[key]
               if (!product) return null
               return (
-                <li key={key} className="bg-cream">
-                  <Reveal delay={Math.min(index, 2) * 0.06} className="h-full [&>*]:h-full">
+                <li key={key}>
+                  <Reveal delay={Math.min(index % 3, 2) * 0.07} className="h-full [&>*]:h-full">
                     <ProductCard
                       product={product}
                       meta={flavours[key]}
-                      index={index + 1}
-                      eager={index < 2}
+                      eager={index < 3}
                       onRequestNotify={onRequestNotify}
                     />
                   </Reveal>
                 </li>
               )
             })}
+
+            {/* Five flavours leave one cell. It points at the hamper builder just below. */}
+            <li>
+              {/* Top padding matches the cards' pouch overhang so the boxes line up side by side (not needed when stacked on phones). */}
+              <Reveal delay={0.14} className="h-full sm:pt-12 [&>*]:h-full">
+                <HamperTeaser onBuild={() => scrollTo('#hampers')} />
+              </Reveal>
+            </li>
           </ul>
         )}
       </div>
@@ -88,25 +84,47 @@ export function ProductGrid({ onRequestNotify }: Props) {
   )
 }
 
-function GridSkeleton() {
+/**
+ * The sixth cell: a quiet pointer to the hamper builder right below. The line,
+ * then four hamper slots, two filled in flavour colours and two still empty,
+ * and one plain link down.
+ */
+function HamperTeaser({ onBuild }: { onBuild: () => void }) {
+  const slots: Array<FlavourKey | null> = ['caramel', 'hazelnut', null, null]
   return (
-    <ul
-      className="grid grid-cols-1 gap-px border border-[var(--rule)] bg-[var(--rule)] sm:grid-cols-2 lg:grid-cols-3"
-      aria-hidden="true"
-    >
-      {Array.from({ length: 3 }).map((_, index) => (
-        <li key={index} className="bg-cream">
-          <div className="flex flex-col gap-4 p-5 sm:p-6">
-            <div className="h-5 w-1/3 animate-pulse bg-sand" />
-            <div className="h-3 w-full animate-pulse bg-sand" />
-          </div>
-          <div className="aspect-[4/3] w-full animate-pulse bg-sand" />
-          <div className="flex flex-col gap-3 p-5 sm:p-6">
-            <div className="h-9 w-2/3 animate-pulse bg-sand" />
-            <div className="h-12 w-full animate-pulse bg-sand" />
-          </div>
-        </li>
-      ))}
-    </ul>
+    <div className="kv-surface ground-vanilla flex h-full w-full flex-col justify-between gap-8 rounded-xl border-2 border-ink p-6 text-left sm:min-h-[22rem] sm:p-8">
+      <div>
+        <p className="text-display-sm font-display">
+          Can&rsquo;t pick?
+          <br />
+          Mix your own.
+        </p>
+        <p className="mt-4 max-w-[26ch] text-[1.02rem] leading-snug font-medium">
+          Two packs or four, any flavours. One flat price.
+        </p>
+      </div>
+
+      <div>
+        {/* Four slots: two packed, two to fill. */}
+        <div aria-hidden="true" className="flex gap-2">
+          {slots.map((key, index) => (
+            <span
+              key={index}
+              className={cn(
+                'size-9 shape-squircle border-2',
+                key ? cn('kv-grain border-ink', flavours[key].ground) : 'border-dashed border-ink/35',
+              )}
+            />
+          ))}
+        </div>
+
+        <button type="button" onClick={onBuild} className="group mt-6 flex items-center gap-3 text-[1.05rem] font-bold">
+          Build a hamper
+          <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-y-1">
+            &darr;
+          </span>
+        </button>
+      </div>
+    </div>
   )
 }

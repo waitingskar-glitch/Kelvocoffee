@@ -22,12 +22,12 @@ export function QuantitySelector({
   max = 99,
 }: Props) {
   const buttonClass =
-    'grid size-11 place-items-center text-espresso transition-colors duration-150 hover:bg-espresso/[0.05] disabled:opacity-35 disabled:hover:bg-transparent'
+    'grid size-11 place-items-center shape-squircle transition-colors duration-150 hover:bg-ink/[0.08] disabled:cursor-not-allowed disabled:hover:bg-transparent'
 
   return (
     <div
       className={cn(
-        'inline-flex items-center border border-[var(--rule)] bg-cream',
+        'inline-flex items-center shape-squircle border-2 border-ink bg-paper',
         disabled && 'opacity-60',
       )}
     >
@@ -41,7 +41,7 @@ export function QuantitySelector({
         <MinusIcon className="size-4" />
       </button>
 
-      <span className="index-mark grid min-w-8 place-items-center text-[0.85rem] text-espresso">
+      <span className="index-mark grid min-w-8 place-items-center text-[1rem] font-bold">
         {busy ? <Spinner className="size-3" /> : quantity}
       </span>
 

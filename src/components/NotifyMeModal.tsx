@@ -15,7 +15,7 @@ import { Spinner } from './ui/Spinner'
 import { CheckIcon } from './ui/icons'
 
 export interface NotifyTarget {
-  /** Null when the product does not exist in Shopify yet (e.g. the trial pack). */
+  /** Null when the product does not exist in Shopify yet. */
   product: Product | null
   variant?: ProductVariant
   /** Display name used in the copy. */
@@ -103,21 +103,21 @@ export function NotifyMeModal({ target, onClose }: Props) {
       onClose={onClose}
       labelledById="notify-heading"
       describedById="notify-description"
-      panelClassName="animate-scale-in inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto border-t border-[var(--rule)] bg-cream p-6 sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:w-[28rem] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:border sm:p-9"
+      panelClassName="kv-surface ground-vanilla animate-scale-in inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-xl border-2 border-ink p-6 sm:inset-x-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:w-[30rem] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:p-9"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="label text-caramel">
+          <p className="label">
             {isRestock ? 'Back in stock' : 'Early access'}
           </p>
-          <h2 id="notify-heading" className="mt-3 font-display text-[1.6rem] leading-tight text-espresso">
+          <h2 id="notify-heading" className="mt-3 text-[2.2rem] leading-none">
             {status === 'done' ? "You're on the list." : `Be first to get ${target.title}.`}
           </h2>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="label -mt-1 -mr-1 shrink-0 rounded-xs py-1 text-espresso transition-opacity hover:opacity-60"
+          className="label -mt-1 -mr-1 shrink-0 rounded-xs py-1 underline underline-offset-4"
         >
           Close
         </button>
@@ -125,11 +125,11 @@ export function NotifyMeModal({ target, onClose }: Props) {
 
       {status === 'done' ? (
         <div className="mt-5">
-          <p id="notify-description" className="text-[0.95rem] leading-relaxed text-muted">
+          <p id="notify-description" className="text-[1.02rem] leading-relaxed">
             We&rsquo;ll let you know the moment it&rsquo;s ready. No newsletter, no noise.
           </p>
-          <div className="mt-6 flex items-center gap-2.5 rounded-sm border border-[var(--rule)] bg-cream-deep px-4 py-3 text-[0.88rem] text-espresso">
-            <CheckIcon className="size-4 shrink-0 text-caramel" />
+          <div className="kv-grain ground-paper mt-6 flex items-center gap-2.5 rounded-md border-2 border-ink px-4 py-3 text-[0.95rem] font-semibold">
+            <CheckIcon className="size-4 shrink-0" />
             Saved against {target.title}.
           </div>
           <Button fullWidth size="lg" className="mt-6" onClick={onClose}>
@@ -139,7 +139,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="mt-5">
-          <p id="notify-description" className="text-[0.93rem] leading-relaxed text-muted">
+          <p id="notify-description" className="text-[1.02rem] leading-relaxed">
             {isRestock
               ? `${target.title} is out of stock right now. Leave your details and we'll email you the moment it's back.`
               : `${target.title} isn't out yet. Leave your details and you'll hear before anyone else.`}
@@ -180,7 +180,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
           </div>
 
           {formError && (
-            <p role="alert" className="mt-4 text-[0.85rem] text-[#a4442c]">
+            <p role="alert" className="kv-grain ground-whiskey mt-4 rounded-md border-2 border-ink px-4 py-3 text-[0.95rem] font-semibold">
               {formError}
             </p>
           )}
@@ -196,7 +196,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
             )}
           </Button>
 
-          <p className="mt-3 text-center text-[0.74rem] text-muted">
+          <p className="label mt-3">
             We only use this to tell you about {target.title}.
           </p>
 
@@ -211,7 +211,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
 function DevNotice() {
   if (!import.meta.env.DEV) return null
   return (
-    <p className="mt-5 rounded-md border border-dashed border-caramel/50 px-3 py-2 text-[0.72rem] leading-relaxed text-caramel">
+    <p className="mt-5 rounded-md border-2 border-dashed border-ink px-3 py-2 text-[0.78rem] leading-relaxed">
       Development mode: no <code>VITE_PREORDER_ENDPOINT</code> configured, so this submission was
       logged to the console instead of being sent.
     </p>

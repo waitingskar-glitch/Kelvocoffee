@@ -43,7 +43,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       if (!catalog) return null
       const products = [
         ...Object.values(catalog.byFlavour),
-        ...(catalog.trialPack ? [catalog.trialPack] : []),
+        ...(catalog.hampers.duo ? [catalog.hampers.duo] : []),
+        ...(catalog.hampers.four ? [catalog.hampers.four] : []),
       ] as Product[]
       for (const product of products) {
         const variant = product.variants.find((v) => v.id === merchandiseId)

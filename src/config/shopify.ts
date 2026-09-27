@@ -38,8 +38,14 @@ export const productHandles = {
   hazelnut: clean(env.VITE_HANDLE_HAZELNUT) || 'hazelnut-coffee-concentrate',
   caramel: clean(env.VITE_HANDLE_CARAMEL) || 'caramel-coffee-concentrate',
   whiskey: clean(env.VITE_HANDLE_WHISKEY) || 'whiskey-coffee-concentrate',
-  /** Set via VITE_HANDLE_TRIAL_PACK; live in Shopify as `kelvo-trial-pack`. */
-  trialPack: clean(env.VITE_HANDLE_TRIAL_PACK),
+  /**
+   * The build-your-own hampers. Each is one Shopify product at a fixed price
+   * whatever flavours go in, with a "50 ml" and a "100 ml" variant; the
+   * flavours ride along on the cart line as a note. Until products exist at
+   * these handles, the hamper section stays off the live site.
+   */
+  duoHamper: clean(env.VITE_HANDLE_DUO_HAMPER) || 'kelvo-duo-hamper',
+  fourHamper: clean(env.VITE_HANDLE_FOUR_HAMPER) || 'kelvo-hamper-of-four',
 } as const
 
 /** The order flavours appear in the shop grid. */

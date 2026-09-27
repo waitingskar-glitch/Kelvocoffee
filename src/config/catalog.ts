@@ -1,34 +1,77 @@
-import type { FlavourKey } from './shopify'
+import { productHandles, shopOrder, type FlavourKey } from './shopify'
 import type { Product } from '@/types/shopify'
 
 /**
- * Presentation metadata for each flavour.
+ * Presentation metadata for each flavour: the ground it owns, the pack
+ * render, and a line of card copy in brand voice.
  *
- * This is *design* data only — accent colours, tasting notes, image paths.
  * Commercial data (title, description, price, availability, variants) always
  * comes from Shopify. Nothing priced lives in this file.
+ *
+ * Voice rules apply here too: lead with the flavour, never the origin; never
+ * "natural", "small-batch", "artisanal" or tasting notes.
  */
 export interface FlavourMeta {
   key: FlavourKey
-  /** Short display name used in cards, filters and cart. */
   name: string
-  /** Two or three words describing the cup. */
+  /** A couple of words about the cup. */
   note: string
-  /** One line of card copy, in brand voice. */
+  /** One line of card copy. Three beats, then stop. */
   blurb: string
+  /** CSS class that sets this flavour's ground on a .kv-surface / .kv-grain. */
+  ground: string
+  /** The ground as a colour, for the odd inline swatch. */
   accent: string
-  image: {
-    src: string
-    srcSet: string
-    alt: string
+  /** Studio photograph of the front of the pouch. */
+  image: ProductPhoto
+  /** The back panel: ritual, ingredients, nutrition. */
+  back: ProductPhoto
+  /** The front of the pouch cut out (no background), for layouts that stand it on a ground. */
+  pouch: ProductPhoto
+}
+
+export interface ProductPhoto {
+  src: string
+  srcSet: string
+  width: number
+  height: number
+  alt: string
+}
+
+/** Studio photographs, 3:4, from "Product Images (1)". Widths match the files. */
+const PHOTO_WIDTHS = [480, 800, 1086] as const
+
+function photo(key: FlavourKey, side: 'front' | 'back', name: string): ProductPhoto {
+  const path = (w: number) => `/assets/products/${key}-${side}-${w}.webp`
+  return {
+    src: path(800),
+    srcSet: PHOTO_WIDTHS.map((w) => `${path(w)} ${w}w`).join(', '),
+    width: 1086,
+    height: 1448,
+    alt:
+      side === 'front'
+        ? `Kelvo ${name} flavoured coffee concentrate pouch, front`
+        : `Back of the Kelvo ${name} pouch: how to Kelvo, ingredients and nutrition`,
   }
 }
 
-function imageFor(slug: string, alt: string) {
+/** Background-free pouch fronts, from "Product Images (1)/1-No BG". */
+const POUCH_SIZES: Record<FlavourKey, [number, number]> = {
+  classic: [490, 926],
+  vanilla: [493, 929],
+  hazelnut: [481, 913],
+  caramel: [490, 926],
+  whiskey: [493, 930],
+}
+
+function pouch(key: FlavourKey, name: string): ProductPhoto {
+  const [w, h] = POUCH_SIZES[key]
   return {
-    src: `/assets/products/${slug}-1100.webp`,
-    srcSet: `/assets/products/${slug}-640.webp 640w, /assets/products/${slug}-1100.webp 1100w`,
-    alt,
+    src: `/assets/pouches/${key}-full.webp`,
+    srcSet: `/assets/pouches/${key}-320.webp 320w, /assets/pouches/${key}-full.webp ${w}w`,
+    width: w,
+    height: h,
+    alt: `Kelvo ${name} flavoured coffee concentrate pouch`,
   }
 }
 
@@ -36,53 +79,70 @@ export const flavours: Record<FlavourKey, FlavourMeta> = {
   classic: {
     key: 'classic',
     name: 'Classic',
-    note: 'Rich · Full-bodied',
-    blurb: 'The one you already love. Colombian Huila beans, naturally processed, nothing else added.',
-    accent: 'var(--color-flavour-classic)',
-    image: imageFor('classic', 'Kelvo Classic coffee concentrate pouch on a dark stone counter'),
+    note: 'Just coffee',
+    blurb: 'Filter coffee, minus the filter. No flavour added. The one you grew up on.',
+    ground: 'ground-classic',
+    accent: 'var(--color-classic)',
+    image: photo('classic', 'front', 'Classic'),
+    back: photo('classic', 'back', 'Classic'),
+    pouch: pouch('classic', 'Classic'),
   },
   vanilla: {
     key: 'vanilla',
     name: 'Vanilla',
-    note: 'Soft · Fragrant',
-    blurb: 'Madagascan Bourbon vanilla. Aromatic rather than sugary — the quiet one in the lineup.',
-    accent: 'var(--color-flavour-vanilla)',
-    image: imageFor('vanilla', 'Kelvo Vanilla coffee concentrate pouch on a dark stone counter'),
+    note: 'Soft and sweet',
+    blurb: 'Soft, sweet and easy. The one you finish without noticing.',
+    ground: 'ground-vanilla',
+    accent: 'var(--color-vanilla)',
+    image: photo('vanilla', 'front', 'Vanilla'),
+    back: photo('vanilla', 'back', 'Vanilla'),
+    pouch: pouch('vanilla', 'Vanilla'),
   },
   hazelnut: {
     key: 'hazelnut',
     name: 'Hazelnut',
-    note: 'Nutty · Toasted',
-    blurb: 'Slow-roasted hazelnut that behaves beautifully with milk. Our most-requested pour.',
-    accent: 'var(--color-flavour-hazelnut)',
-    image: imageFor('hazelnut', 'Kelvo Hazelnut coffee concentrate pouch on a dark stone counter'),
+    note: 'Nutty and warm',
+    blurb: 'Nutty and warm. Very good with a lot of milk.',
+    ground: 'ground-hazelnut',
+    accent: 'var(--color-hazelnut)',
+    image: photo('hazelnut', 'front', 'Hazelnut'),
+    back: photo('hazelnut', 'back', 'Hazelnut'),
+    pouch: pouch('hazelnut', 'Hazelnut'),
   },
   caramel: {
     key: 'caramel',
     name: 'Caramel',
-    note: 'Buttery · Deep',
-    blurb: 'Slow-caramelised and dessert-like, without tipping into syrup territory.',
-    accent: 'var(--color-flavour-caramel)',
-    image: imageFor('caramel', 'Kelvo Caramel coffee concentrate pouch on a dark stone counter'),
+    note: 'Buttery',
+    blurb: 'Buttery, a bit dessert-y. Tastes like a treat. Drinks like a Tuesday.',
+    ground: 'ground-caramel',
+    accent: 'var(--color-caramel)',
+    image: photo('caramel', 'front', 'Caramel'),
+    back: photo('caramel', 'back', 'Caramel'),
+    pouch: pouch('caramel', 'Caramel'),
   },
   whiskey: {
     key: 'whiskey',
     name: 'Whiskey',
-    note: 'Cask-aged · Alcohol-free',
-    blurb: 'Barrel-fermented for deep, cask-aged character. All of the edge, none of the alcohol.',
-    accent: 'var(--color-flavour-whiskey)',
-    image: imageFor('whiskey', 'Kelvo Whiskey coffee concentrate pouch on a dark stone counter'),
+    note: 'Oaky. Zero alcohol',
+    blurb: 'All the cask. None of the alcohol. The evening one.',
+    ground: 'ground-whiskey',
+    accent: 'var(--color-whiskey)',
+    image: photo('whiskey', 'front', 'Whiskey'),
+    back: photo('whiskey', 'back', 'Whiskey'),
+    pouch: pouch('whiskey', 'Whiskey'),
   },
 }
 
-/**
- * Preview-mode catalog.
- *
- * Used only when Storefront credentials are absent, so the page can be
- * reviewed end to end. Mirrors the live Shopify catalog; the moment
- * `VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN` is set, this is ignored entirely and
- * every field below comes from Shopify instead.
- */
+/** Flavour metadata for a Shopify handle, e.g. for a cart line. Null for anything that isn't a flavour (a hamper). */
+export function metaForHandle(handle: string): FlavourMeta | null {
+  const key = shopOrder.find((k) => productHandles[k] === handle)
+  return key ? flavours[key] : null
+}
+
+/* ------------------------------------------------------------------ */
+/* Preview catalog — only used when Storefront credentials are absent. */
+/* ------------------------------------------------------------------ */
+
 const PREVIEW_CURRENCY = 'INR'
 
 function previewVariants(handleSeed: string, available: boolean) {
@@ -90,7 +150,7 @@ function previewVariants(handleSeed: string, available: boolean) {
     {
       id: `preview://variant/${handleSeed}/50ml`,
       title: '50 ml - 5 servings',
-      price: { amount: 150, currencyCode: PREVIEW_CURRENCY },
+      price: { amount: 199, currencyCode: PREVIEW_CURRENCY },
       compareAtPrice: null,
       availableForSale: available,
       selectedOptions: { Quantity: '50 ml - 5 servings' },
@@ -98,7 +158,7 @@ function previewVariants(handleSeed: string, available: boolean) {
     {
       id: `preview://variant/${handleSeed}/100ml`,
       title: '100 ml - 10 servings',
-      price: { amount: 220, currencyCode: PREVIEW_CURRENCY },
+      price: { amount: 299, currencyCode: PREVIEW_CURRENCY },
       compareAtPrice: null,
       availableForSale: available,
       selectedOptions: { Quantity: '100 ml - 10 servings' },
@@ -106,73 +166,25 @@ function previewVariants(handleSeed: string, available: boolean) {
   ]
 }
 
-interface PreviewSeed {
-  handle: string
-  title: string
-  description: string
-  /** Whiskey is still a draft product in Shopify, so it is not purchasable. */
-  available: boolean
-  flavour: FlavourKey
-}
-
-const previewSeeds: PreviewSeed[] = [
-  {
-    flavour: 'classic',
-    handle: 'classic-coffee-concentrate',
-    title: 'Classic Coffee Concentrate',
-    description:
-      "Rich, full-bodied, and unmistakably coffee. No flavours, no distractions — just naturally processed beans from Colombian Huila.",
-    available: true,
-  },
-  {
-    flavour: 'vanilla',
-    handle: 'vanilla-coffee-concentrate',
-    title: 'Vanilla Coffee Concentrate',
-    description:
-      'Made with natural Madagascan Bourbon vanilla — soft and fragrant rather than sugary-sweet.',
-    available: true,
-  },
-  {
-    flavour: 'hazelnut',
-    handle: 'hazelnut-coffee-concentrate',
-    title: 'Hazelnut Coffee Concentrate',
-    description:
-      'Slow-roasted to bring out toasted hazelnut notes that pair beautifully with milk-based drinks.',
-    available: true,
-  },
-  {
-    flavour: 'caramel',
-    handle: 'caramel-coffee-concentrate',
-    title: 'Caramel Coffee Concentrate',
-    description:
-      'Our signature brew layered with deep, buttery caramel. Caramelised slow for a smooth finish.',
-    available: true,
-  },
-  {
-    flavour: 'whiskey',
-    handle: 'whiskey-coffee-concentrate',
-    title: 'Whiskey Coffee Concentrate',
-    description:
-      'Barrel-fermented to develop deep, cask-aged notes reminiscent of your favourite spirit — completely alcohol-free.',
-    available: false,
-  },
+const previewSeeds: Array<{ flavour: FlavourKey; handle: string; title: string; available: boolean }> = [
+  { flavour: 'classic', handle: 'classic-coffee-concentrate', title: 'Classic Coffee Concentrate', available: true },
+  { flavour: 'vanilla', handle: 'vanilla-coffee-concentrate', title: 'Vanilla Coffee Concentrate', available: true },
+  { flavour: 'hazelnut', handle: 'hazelnut-coffee-concentrate', title: 'Hazelnut Coffee Concentrate', available: true },
+  { flavour: 'caramel', handle: 'caramel-coffee-concentrate', title: 'Caramel Coffee Concentrate', available: true },
+  { flavour: 'whiskey', handle: 'whiskey-coffee-concentrate', title: 'Whiskey Coffee Concentrate', available: true },
 ]
 
-export const previewCatalog: Product[] = previewSeeds.map((seed) => ({
-  id: `preview://product/${seed.flavour}`,
-  handle: seed.handle,
-  title: seed.title,
-  description: seed.description,
-  descriptionHtml: `<p>${seed.description}</p>`,
-  productType: 'Coffee Concentrate',
-  availableForSale: seed.available,
-  images: [
-    {
-      url: flavours[seed.flavour].image.src,
-      altText: flavours[seed.flavour].image.alt,
-      width: 1100,
-      height: 821,
-    },
-  ],
-  variants: previewVariants(seed.flavour, seed.available),
-}))
+export const previewCatalog: Product[] = previewSeeds.map((seed) => {
+  const meta = flavours[seed.flavour]
+  return {
+    id: `preview://product/${seed.flavour}`,
+    handle: seed.handle,
+    title: seed.title,
+    description: meta.blurb,
+    descriptionHtml: `<p>${meta.blurb}</p>`,
+    productType: 'Coffee Concentrate',
+    availableForSale: seed.available,
+    images: [{ url: meta.image.src, altText: meta.image.alt, width: meta.image.width, height: meta.image.height }],
+    variants: previewVariants(seed.flavour, seed.available),
+  }
+})

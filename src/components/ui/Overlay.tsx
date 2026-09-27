@@ -92,7 +92,7 @@ export function Overlay({
   return createPortal(
     <div className="fixed inset-0 z-[100]" onKeyDown={onKeyDown}>
       <div
-        className="animate-fade-in absolute inset-0 bg-espresso/45 backdrop-blur-[3px]"
+        className="animate-fade-in absolute inset-0 bg-ink/55"
         onClick={onClose}
         aria-hidden="true"
       />

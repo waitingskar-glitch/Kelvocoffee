@@ -1,8 +1,18 @@
+import type { FlavourKey } from './shopify'
+
 export interface Testimonial {
   quote: string
   name: string
   /** e.g. "Indiranagar, Bengaluru" */
-  context: string
+  context?: string
+  /** Their star rating, 1 to 5, if they gave one. */
+  rating?: number
+  /** A short headline in their words, e.g. "Tastes like dessert." */
+  headline?: string
+  /** The flavour they're talking about: the card takes that flavour's colour. */
+  flavour?: FlavourKey
+  /** A photo they've agreed to share, e.g. '/assets/reviews/ananya.webp'. Initials are shown otherwise. */
+  photo?: string
 }
 
 /**
@@ -10,33 +20,22 @@ export interface Testimonial {
  *
  * INTENTIONALLY EMPTY. Nothing in this array is invented — add entries here
  * (or wire this to a reviews app) once you have genuine, attributable
- * feedback, and the section renders them automatically.
+ * feedback, and the Testimonials section on the home page renders them.
+ * While it's empty the section doesn't appear on the live site (the local
+ * dev server shows blank placeholder cards, so the design can be reviewed).
+ *
+ * Example:
+ *
+ *   {
+ *     quote: 'I stopped buying cafe lattes.',
+ *     name: 'Ananya',
+ *     context: 'Indiranagar, Bengaluru',
+ *     rating: 5,
+ *     headline: 'Tastes like dessert.',
+ *     flavour: 'hazelnut',
+ *   },
  */
 export const testimonials: Testimonial[] = []
-
-/**
- * Sample entries used to preview the layout during development only.
- *
- * These are clearly labelled as samples in the UI and are never rendered in a
- * production build. Delete this array once `testimonials` is populated.
- */
-export const sampleTestimonials: Testimonial[] = [
-  {
-    quote: 'Replace this with a real quote from a real customer. Keep it to a sentence or two.',
-    name: 'Customer name',
-    context: 'Neighbourhood, city',
-  },
-  {
-    quote: 'Second sample quote. Short, specific and in the customer’s own words works best.',
-    name: 'Customer name',
-    context: 'Neighbourhood, city',
-  },
-  {
-    quote: 'Third sample quote. Swap all three before this page goes live.',
-    name: 'Customer name',
-    context: 'Neighbourhood, city',
-  },
-]
 
 /* ------------------------------------------------------------------ */
 /* Per-product quotes                                                  */

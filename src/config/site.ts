@@ -9,18 +9,34 @@ const env = import.meta.env
 export const site = {
   name: 'Kelvo',
   legalName: 'Kelvo Coffee',
-  tagline: 'Flavoured filter coffee, reimagined',
+  tagline: 'Coffee, but make it your flavour.',
+  /** The document title every page restores when it unmounts. */
+  defaultTitle: 'Kelvo Coffee | Coffee, but make it your flavour.',
   /** Set VITE_SITE_URL in production for canonical + Open Graph URLs. */
   url: (typeof env.VITE_SITE_URL === 'string' && env.VITE_SITE_URL.trim()) || 'https://kelvocoffee.com',
   city: 'Bengaluru',
   email: (typeof env.VITE_CONTACT_EMAIL === 'string' && env.VITE_CONTACT_EMAIL.trim()) || 'hello@kelvocoffee.com',
 } as const
 
+/**
+ * The hero's left panel, where the reference runs a video.
+ *
+ * Until `videoSrc` is set the panel is a plain Caramel ground. To add the
+ * video: put an MP4 (H.264, muted, a short loop, under ~5 MB) in
+ * `public/assets/hero/` and set its path here, e.g. '/assets/hero/hero.mp4'.
+ * A poster (a still from the video, WebP or JPG) shows while it loads and to
+ * anyone who has asked for reduced motion.
+ */
+export const heroMedia = {
+  videoSrc: '',
+  poster: '',
+} as const
+
 export const navLinks = [
   { label: 'Shop', href: '#shop' },
-  { label: 'Flavours', href: '#shop' },
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Our story', href: '#story' },
+  { label: 'How to Kelvo', href: '#how-to-kelvo' },
+  { label: 'FAQ', href: '#faq' },
+  { label: 'About', href: '/about' },
 ] as const
 
 /**
@@ -32,39 +48,23 @@ export const socialLinks = [
   { label: 'WhatsApp', href: (env.VITE_SOCIAL_WHATSAPP as string | undefined)?.trim() ?? '' },
 ].filter((link) => link.href.length > 0)
 
-/**
- * Trial Pack presentation.
- *
- * The product is live in Shopify as `kelvo-trial-pack`, so price and
- * availability come from there. Only the flavour chips and copy live here.
- */
-export const trialPack = {
-  name: 'The Kelvo Trial Pack',
-  pouches: 4,
-  volumeMl: 50,
-  /** Fallback display price used only until the Shopify product is connected. */
-  fallbackPrice: 400,
-  currency: 'INR',
-  /** Must match what's physically in the box — and the pack photography. */
-  flavourKeys: ['vanilla', 'whiskey', 'hazelnut', 'caramel'] as const,
-} as const
-
 export const footerSections = [
   {
     title: 'Shop',
     links: [
-      { label: 'All coffee', href: '#shop' },
-      { label: 'Trial pack', href: '#trial-pack' },
-      { label: 'Bundles', href: '#trial-pack' },
-      { label: 'Gift hampers', href: '#trial-pack' },
+      { label: 'Classic', href: '/products/classic-coffee-concentrate' },
+      { label: 'Vanilla', href: '/products/vanilla-coffee-concentrate' },
+      { label: 'Hazelnut', href: '/products/hazelnut-coffee-concentrate' },
+      { label: 'Caramel', href: '/products/caramel-coffee-concentrate' },
+      { label: 'Whiskey', href: '/products/whiskey-coffee-concentrate' },
     ],
   },
   {
     title: 'Information',
     links: [
-      { label: 'Our story', href: '#story' },
-      { label: 'How it works', href: '#how-it-works' },
-      { label: 'FAQ', href: '#how-it-works' },
+      { label: 'About', href: '/about' },
+      { label: 'How to Kelvo', href: '#how-to-kelvo' },
+      { label: 'FAQ', href: '#faq' },
       { label: 'Contact', href: `mailto:${site.email}` },
     ],
   },

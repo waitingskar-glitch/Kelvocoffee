@@ -1,3 +1,4 @@
+import { flushSync } from 'react-dom'
 import {
   createContext,
   useCallback,
@@ -21,7 +22,26 @@ import {
 
 interface RouterValue {
   path: string
-  navigate: (to: string) => void
+  /** Resolves once the new page is on screen and its entrance has finished. */
+  navigate: (to: string) => Promise<void>
+}
+
+/**
+ * Swaps pages inside a View Transition where the browser has one, so the old
+ * page eases out and the new one eases in (styles in index.css). Browsers
+ * without it, and anyone who asked for reduced motion, just get the swap.
+ */
+function withPageTransition(update: () => void): Promise<void> {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduce || typeof document.startViewTransition !== 'function') {
+    update()
+    return Promise.resolve()
+  }
+  const transition = document.startViewTransition(() => flushSync(update))
+  // A skipped transition (e.g. a background tab) still runs the update; its
+  // `ready` promise rejects, which is expected and not worth surfacing.
+  transition.ready.catch(() => undefined)
+  return transition.finished.catch(() => undefined)
 }
 
 const RouterContext = createContext<RouterValue | null>(null)
@@ -30,18 +50,22 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   const [path, setPath] = useState(() => normalise(window.location.pathname))
 
   useEffect(() => {
-    const onPopState = () => setPath(normalise(window.location.pathname))
+    const onPopState = () => {
+      void withPageTransition(() => setPath(normalise(window.location.pathname)))
+    }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
   const navigate = useCallback((to: string) => {
     const next = normalise(to)
-    if (next === normalise(window.location.pathname)) return
+    if (next === normalise(window.location.pathname)) return Promise.resolve()
     window.history.pushState({}, '', next)
-    setPath(next)
-    // A new page always starts at the top, the way a real navigation does.
-    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    return withPageTransition(() => {
+      setPath(next)
+      // A new page always starts at the top, the way a real navigation does.
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    })
   }, [])
 
   const value = useMemo(() => ({ path, navigate }), [path, navigate])
@@ -84,7 +108,7 @@ export function Link({
         if (isExternal || isModified || rest.target === '_blank') return
 
         event.preventDefault()
-        navigate(href)
+        void navigate(href)
       }}
       {...rest}
     >

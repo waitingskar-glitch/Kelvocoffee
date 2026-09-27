@@ -52,6 +52,13 @@ export interface CartLine {
   image: ProductImage | null
   unitPrice: Money
   lineTotal: Money
+  /** Notes carried on the line, e.g. a hamper's flavours: { key: 'Flavours', value: 'Caramel ×2, Hazelnut' }. */
+  attributes: CartAttribute[]
+}
+
+export interface CartAttribute {
+  key: string
+  value: string
 }
 
 export interface Cart {

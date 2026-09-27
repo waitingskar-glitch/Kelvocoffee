@@ -1,4 +1,4 @@
-import { CommerceError, type Cart, type CartLine, type Product, type ProductVariant } from '@/types/shopify'
+import { CommerceError, type Cart, type CartAttribute, type CartLine, type Product, type ProductVariant } from '@/types/shopify'
 import type { CartService } from './cart'
 
 const PREVIEW_CART_KEY = 'kelvo:preview-cart'
@@ -10,6 +10,12 @@ export type VariantResolver = (
 interface StoredLine {
   merchandiseId: string
   quantity: number
+  attributes?: CartAttribute[]
+}
+
+/** One line per variant and set of notes, so two different hampers stay two lines. */
+function lineKey(merchandiseId: string, attributes: CartAttribute[] = []): string {
+  return attributes.length ? `${merchandiseId}#${JSON.stringify(attributes)}` : merchandiseId
 }
 
 /**
@@ -56,7 +62,7 @@ export function previewCart(resolveVariant: VariantResolver): CartService {
       const { product, variant } = resolved
       currencyCode = variant.price.currencyCode
       lines.push({
-        id: `preview-line:${stored_.merchandiseId}`,
+        id: `preview-line:${lineKey(stored_.merchandiseId, stored_.attributes)}`,
         quantity: stored_.quantity,
         merchandiseId: stored_.merchandiseId,
         variantTitle: variant.title,
@@ -68,6 +74,7 @@ export function previewCart(resolveVariant: VariantResolver): CartService {
           amount: variant.price.amount * stored_.quantity,
           currencyCode: variant.price.currencyCode,
         },
+        attributes: stored_.attributes ?? [],
       })
     }
 
@@ -83,7 +90,7 @@ export function previewCart(resolveVariant: VariantResolver): CartService {
     }
   }
 
-  function lineIdToMerchandiseId(lineId: string): string {
+  function lineIdToKey(lineId: string): string {
     return lineId.replace(/^preview-line:/, '')
   }
 
@@ -95,25 +102,26 @@ export function previewCart(resolveVariant: VariantResolver): CartService {
       return stored.length ? build(stored) : null
     },
 
-    async add(merchandiseId, quantity) {
+    async add(merchandiseId, quantity, attributes = []) {
       if (!resolveVariant(merchandiseId)) {
         throw new CommerceError('unavailable', 'That option is not available right now.')
       }
       const stored = read()
-      const existing = stored.find((line) => line.merchandiseId === merchandiseId)
+      const key = lineKey(merchandiseId, attributes)
+      const existing = stored.find((line) => lineKey(line.merchandiseId, line.attributes) === key)
       if (existing) existing.quantity += quantity
-      else stored.push({ merchandiseId, quantity })
+      else stored.push(attributes.length ? { merchandiseId, quantity, attributes } : { merchandiseId, quantity })
       write(stored)
       return build(stored)
     },
 
     async update(lineId, quantity) {
-      const merchandiseId = lineIdToMerchandiseId(lineId)
+      const key = lineIdToKey(lineId)
       let stored = read()
       if (quantity <= 0) {
-        stored = stored.filter((line) => line.merchandiseId !== merchandiseId)
+        stored = stored.filter((line) => lineKey(line.merchandiseId, line.attributes) !== key)
       } else {
-        const existing = stored.find((line) => line.merchandiseId === merchandiseId)
+        const existing = stored.find((line) => lineKey(line.merchandiseId, line.attributes) === key)
         if (existing) existing.quantity = quantity
       }
       write(stored)
@@ -121,8 +129,8 @@ export function previewCart(resolveVariant: VariantResolver): CartService {
     },
 
     async remove(lineId) {
-      const merchandiseId = lineIdToMerchandiseId(lineId)
-      const stored = read().filter((line) => line.merchandiseId !== merchandiseId)
+      const key = lineIdToKey(lineId)
+      const stored = read().filter((line) => lineKey(line.merchandiseId, line.attributes) !== key)
       write(stored)
       return build(stored)
     },
