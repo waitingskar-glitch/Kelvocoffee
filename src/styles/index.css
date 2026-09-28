@@ -562,28 +562,26 @@
    HOT. COLD. — the two traced cups (HotColdBand).
 
    Paint-in, once, when the section first comes into view
-   (data-painted), about two and a half seconds from first splash
+   (data-painted), about a second and a half from first splash
    to the iced cup's last pour: the splash bursts out from behind the
    glass, the ink is drawn in top to bottom, the coffee is poured
    in bottom to top, layer by layer. Every paint animation ends on
    (and rests at) the drawing exactly as traced.
 
-   Then the idle loops, kept very quiet: the splash layers drift a
-   few units and the whole splash breathes, the colours shift a
-   shade within their own hues, the glass barely rocks, the odd
+   Then the idle loops, kept very quiet: the whole splash breathes,
+   the colours shift a shade within their own hues, the glass barely rocks, the odd
    droplet drifts out, steam rises, the ice glints, the shine lines
-   pulse. The ink "boil" is an SVG filter (see the component). The
-   words don't move. Pivots are set inline, in viewBox units.
+   pulse. Every idle loop moves or fades a whole layer (the drawing
+   is a stack of them), so it runs on the GPU without redrawing the
+   traced curves. The words don't move.
    ============================================================ */
 
-.kv-hc-art { overflow: visible; --start: 0s; }
-.kv-hc-cold { --start: 0.32s; }
-/* Only the animated parts: plain groups keep their transform attributes as drawn. */
-.kv-hc-art .hc-splash,
-.kv-hc-art .hc-glass,
-.kv-hc-art .hc-ticks,
-.kv-hc-art .hc-sp,
-.kv-hc-art .hc-drop {
+/* --u: one unit of the drawing (1/972 of its width), for layers that move by drawing units. */
+.kv-hc-art { --start: 0s; --u: calc(100cqw / 972); }
+.kv-hc-cold { --start: 0.19s; }
+/* Paths that move inside their layer turn about viewBox points (--pivot);
+   whole layers turn about a percentage origin set inline. */
+.kv-hc-art .hc-sp {
   transform-box: view-box;
   transform-origin: var(--pivot);
 }
@@ -591,22 +589,15 @@
 /* Nothing shows until it is painted in. */
 .kv-hc[data-painted="false"] .kv-hc-art { visibility: hidden; }
 
-/* --- Splash: bursts out, then drifts and breathes. --- */
+/* --- Splash: bursts out, layer by layer, then the whole splash breathes. --- */
 .kv-hc[data-painted="true"] .hc-sp {
-  animation:
-    kv-hc-splat 0.96s cubic-bezier(0.2, 1.25, 0.4, 1) calc(var(--start) + var(--i) * 48ms) both,
-    kv-hc-flow calc(7s + var(--i) * 0.6s) ease-in-out calc(var(--start) + 2.3s + var(--i) * 0.25s) infinite,
-    kv-hc-tint calc(6s + var(--i) * 0.6s) ease-in-out calc(var(--start) + 2.3s + var(--i) * 0.3s) infinite;
+  animation: kv-hc-splat 0.58s cubic-bezier(0.2, 1.25, 0.4, 1) calc(var(--start) + var(--i) * 29ms) both;
 }
 @keyframes kv-hc-splat {
   from { transform: scale(0.3) rotate(-10deg); opacity: 0; }
 }
-@keyframes kv-hc-flow {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(var(--fx), var(--fy)); }
-}
 .kv-hc[data-painted="true"] .hc-splash {
-  animation: kv-hc-swell 8s cubic-bezier(0.45, 0, 0.55, 1) calc(var(--start) + 2.25s) infinite;
+  animation: kv-hc-swell 8s cubic-bezier(0.45, 0, 0.55, 1) calc(var(--start) + 1.35s) infinite;
 }
 .kv-hc-cold .hc-splash { --swirl: 0.95deg; }
 @keyframes kv-hc-swell {
@@ -614,47 +605,51 @@
   50%      { transform: scale(1.018) rotate(var(--swirl, -0.95deg)); }
 }
 
-/* --- Glass: ink drawn in, coffee poured in, then the colours shift and the glass barely rocks. --- */
+/* --- Glass: ink drawn in, coffee poured in, then the glass barely rocks. --- */
 .kv-hc[data-painted="true"] .hc-ink {
-  animation: kv-hc-draw 1.15s cubic-bezier(0.6, 0, 0.3, 1) calc(var(--start) + 0.19s) backwards;
+  animation: kv-hc-draw 0.69s cubic-bezier(0.6, 0, 0.3, 1) calc(var(--start) + 0.11s) backwards;
 }
 /* The clip wipes need an explicit end to animate smoothly, and are "backwards"
-   only, so once done the clip is dropped (it would crop the ink's boil). */
+   only, so once done the clip is dropped. */
 @keyframes kv-hc-draw {
   from { clip-path: inset(0 0 100% 0); }
   to   { clip-path: inset(0 0 0 0); }
 }
 .kv-hc[data-painted="true"] .hc-gl {
-  animation: kv-hc-pour 0.83s cubic-bezier(0.3, 0.7, 0.3, 1) calc(var(--start) + 0.58s + var(--i) * 70ms) backwards;
-}
-.kv-hc[data-painted="true"] .hc-tint {
-  animation:
-    kv-hc-pour 0.83s cubic-bezier(0.3, 0.7, 0.3, 1) calc(var(--start) + 0.58s + var(--i) * 70ms) backwards,
-    kv-hc-tint calc(5.5s + var(--i) * 0.6s) ease-in-out calc(var(--start) + 2.45s + var(--i) * 0.35s) infinite;
+  animation: kv-hc-pour 0.5s cubic-bezier(0.3, 0.7, 0.3, 1) calc(var(--start) + 0.35s + var(--i) * 42ms) backwards;
 }
 @keyframes kv-hc-pour {
   from { clip-path: inset(100% 0 0 0); opacity: 0.3; }
   to   { clip-path: inset(0 0 0 0); opacity: 1; }
 }
-/* Each layer eases between its own colour and a near neighbour in the same hue
-   (--tint, set per layer); layers without one have no --tint and keep --c. */
-@keyframes kv-hc-tint {
-  0%, 100% { fill: var(--c); }
-  50%      { fill: var(--tint, var(--c)); }
-}
 .kv-hc[data-painted="true"] .hc-glass {
-  animation: kv-hc-rock 6s cubic-bezier(0.45, 0, 0.55, 1) calc(var(--start) + 2.45s) infinite;
+  animation: kv-hc-rock 6s cubic-bezier(0.45, 0, 0.55, 1) calc(var(--start) + 1.47s) infinite;
 }
 @keyframes kv-hc-rock {
   0%, 100% { transform: rotate(0deg) translateY(0); }
-  25%      { transform: rotate(-0.6deg) translateY(-1.8px); }
-  75%      { transform: rotate(0.6deg) translateY(-3.5px); }
+  25%      { transform: rotate(-0.6deg) translateY(-0.23%); }
+  75%      { transform: rotate(0.6deg) translateY(-0.44%); }
+}
+
+/* --- Colour shift: a tinted copy of the splash (and of the glass) fades in
+   and out over it, drifting a touch, so the tones seem to move. --- */
+.kv-hc-art .hc-tint { opacity: 0; }
+.kv-hc[data-painted="true"] .hc-tint {
+  animation: kv-hc-tint 6.5s ease-in-out calc(var(--start) + 1.4s) infinite;
+}
+.kv-hc[data-painted="true"] .hc-tint-glass {
+  animation-duration: 7.5s;
+  animation-delay: calc(var(--start) + 2.2s);
+}
+@keyframes kv-hc-tint {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  50%      { opacity: 0.9; transform: translate(0.4%, -0.35%); }
 }
 
 /* --- Droplets: now and then, one drifts out from behind the glass. --- */
 .hc-drop { opacity: 0; }
 .kv-hc[data-painted="true"] .hc-drop {
-  animation: kv-hc-drop 6.5s cubic-bezier(0.2, 0.6, 0.35, 1) calc(var(--start) + 2.45s + var(--d)) infinite;
+  animation: kv-hc-drop 6.5s cubic-bezier(0.2, 0.6, 0.35, 1) calc(var(--start) + 1.47s + var(--d)) infinite;
 }
 @keyframes kv-hc-drop {
   0%       { transform: translate(0, 0) scale(0.5); opacity: 0; }
@@ -663,33 +658,24 @@
   100%     { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
 }
 
-/* --- Steam: each wisp is drawn up out of the cup, then lifts away, slowly. --- */
-.kv-hc-art .hc-steam {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-}
+/* --- Steam: each wisp grows up out of the cup, then lifts away, slowly. --- */
+.kv-hc-art .hc-steam { opacity: 0; }
 .kv-hc[data-painted="true"] .hc-steam {
-  animation: kv-hc-steam 5s ease-in-out calc(var(--start) + 2.1s) infinite;
+  animation: kv-hc-steam 5s ease-in-out calc(var(--start) + 1.26s) infinite;
 }
-.kv-hc[data-painted="true"] .hc-steam-2 { animation-delay: calc(var(--start) + 3.8s); }
-.kv-hc[data-painted="true"] .hc-steam-3 { animation-delay: calc(var(--start) + 5.5s); }
+.kv-hc[data-painted="true"] .hc-steam-2 { animation-delay: calc(var(--start) + 2.96s); }
+.kv-hc[data-painted="true"] .hc-steam-3 { animation-delay: calc(var(--start) + 4.66s); }
 @keyframes kv-hc-steam {
-  0%   { stroke-dashoffset: 1; opacity: 0; transform: translate(0, 0); }
+  0%   { opacity: 0; transform: translate(0, 0) scaleY(0.25); }
   20%  { opacity: 1; }
-  55%  { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: -1; opacity: 0; transform: translate(-7px, -26px); }
+  55%  { opacity: 1; transform: translate(0, 0) scaleY(1); }
+  100% { opacity: 0; transform: translate(calc(-5 * var(--u)), calc(-18 * var(--u))) scaleY(1.06); }
 }
 
 /* --- Ice glints and shine lines. --- */
-.kv-hc-art .hc-sparkle {
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-}
+.kv-hc-art .hc-sparkle { opacity: 0; }
 .kv-hc[data-painted="true"] .hc-sparkle {
-  animation: kv-hc-glint 4.5s ease-in-out calc(var(--start) + 2.45s + var(--d) * 1.6) infinite;
+  animation: kv-hc-glint 4.5s ease-in-out calc(var(--start) + 1.47s + var(--d) * 1.6) infinite;
 }
 @keyframes kv-hc-glint {
   0%, 70%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
@@ -698,11 +684,16 @@
 }
 .kv-hc[data-painted="true"] .hc-ticks {
   animation:
-    kv-hc-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) calc(var(--start) + 1.4s) both,
-    kv-hc-tick 2.6s ease-in-out calc(var(--start) + 2.45s) infinite;
+    kv-hc-pop 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) calc(var(--start) + 0.84s) backwards,
+    kv-hc-tick 2.6s ease-in-out calc(var(--start) + 1.47s) infinite;
 }
+/* Entrances that share an element with an idle loop spell out their end
+   (to, the resting state) and don't hold it afterwards (fill: backwards):
+   an entrance left filling, or one whose end comes from the loop underneath,
+   keeps the loop off the GPU for good. */
 @keyframes kv-hc-pop {
   from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 @keyframes kv-hc-tick {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -731,7 +722,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .kv-hc *, .kv-hc-drift-a, .kv-hc-drift-b { animation: none !important; }
-  .kv-hc-art .hc-steam { stroke-dashoffset: 0; }
+  .kv-hc-art .hc-steam { opacity: 1; }
 }
 
 /* ============================================================
@@ -740,9 +731,7 @@
    left to right; then the row rests before the next wave.
    ============================================================ */
 
-.kv-logo-hop path {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
+.kv-logo-hop .kv-letter {
   animation: kv-logo-hop 3.4s cubic-bezier(0.4, 0, 0.3, 1) calc(var(--i) * 0.11s) infinite;
 }
 @keyframes kv-logo-hop {
@@ -753,10 +742,10 @@
   34%           { transform: translateY(-2.5%) scale(0.99, 1.02) rotate(0deg); }
   40%           { transform: translateY(0) scale(1.01, 0.99); }
 }
-.kv-logo-hop[data-live="false"] path { animation-play-state: paused; }
+.kv-logo-hop[data-live="false"] .kv-letter { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
-  .kv-logo-hop path { animation: none; }
+  .kv-logo-hop .kv-letter { animation: none; }
 }
 
 /* ============================================================
@@ -768,23 +757,18 @@
    by cube, the speed lines wipe in, the burst lines pop. Every paint
    animation rests on the drawing exactly as traced.
 
-   Then idles, very quietly (no line boil here: resampling the ink
-   softened it): the coffee and the coral shift a shade (kv-hc-tint),
+   Then idles, very quietly: the coffee and the coral shift a shade
+   (a tinted copy of each fades over it, kv-hc-tint),
    the ice rocks, the bursts pulse, the speed lines drift, the ice
    glints. Pivots come from --pivot on each group, in viewBox units.
    ============================================================ */
 
-.kv-story-art { overflow: visible; }
-.kv-story-art .st-g,
-.kv-story-art .st-g > path {
+/* Each part is its own layer (see ArtLayer), turning about an origin set
+   inline; --u is one unit of the drawing (1/1002 of its width), for moves. */
+.kv-story-art { --u: calc(100cqw / 1002); }
+.kv-story-art .st-ground > path {
   transform-box: view-box;
   transform-origin: var(--pivot, 50% 50%);
-}
-.kv-story-art .st-ice1,
-.kv-story-art .st-ice2,
-.kv-story-art .st-ice3 {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
 }
 .kv-story[data-painted="false"] .kv-story-art { visibility: hidden; }
 
@@ -801,7 +785,8 @@
   animation: kv-st-rise 0.5s cubic-bezier(0.2, 1.35, 0.4, 1) 0.09s both;
 }
 @keyframes kv-st-rise {
-  from { transform: translateY(46px) scale(0.9); opacity: 0; }
+  from { transform: translateY(calc(46 * var(--u))) scale(0.9); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 /* The glass: ink drawn top to bottom, coffee poured bottom to top. Clip wipes
@@ -816,55 +801,60 @@
 .kv-story[data-painted="true"] .st-glass .st-layer {
   animation: kv-st-pour 0.42s cubic-bezier(0.3, 0.7, 0.3, 1) calc(0.33s + var(--i) * 33ms) backwards;
 }
-.kv-story[data-painted="true"] .st-glass .st-tint {
-  animation:
-    kv-st-pour 0.42s cubic-bezier(0.3, 0.7, 0.3, 1) calc(0.33s + var(--i) * 33ms) backwards,
-    kv-hc-tint calc(5.5s + var(--i) * 0.6s) ease-in-out calc(1.6s + var(--i) * 0.35s) infinite;
-}
 @keyframes kv-st-pour {
   from { clip-path: inset(100% 0 0 0); opacity: 0.3; }
   to   { clip-path: inset(0 0 0 0); opacity: 1; }
 }
-.kv-story[data-painted="true"] .st-pouch .st-tint {
-  animation: kv-hc-tint calc(6.5s + var(--i) * 0.5s) ease-in-out calc(1.6s + var(--i) * 0.4s) infinite;
+/* The colour shift: a tinted copy of the glass (and of the pouch, rising with
+   it) fades in and out over the original. */
+.kv-story-art .st-tint { opacity: 0; }
+.kv-story[data-painted="true"] .st-glass.st-tint {
+  animation: kv-hc-tint 7s ease-in-out 1.6s infinite;
+}
+.kv-story[data-painted="true"] .st-pouch.st-tint {
+  animation:
+    kv-st-rise 0.5s cubic-bezier(0.2, 1.35, 0.4, 1) 0.09s backwards,
+    kv-hc-tint 8s ease-in-out 2.1s infinite;
 }
 
 /* The loose ice drops in, cube by cube, then rocks gently. */
 .kv-story[data-painted="true"] .st-ice1 {
   animation:
-    kv-st-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) 0.72s both,
+    kv-st-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) 0.72s backwards,
     kv-st-rock 4.6s ease-in-out 1.6s infinite;
 }
 .kv-story[data-painted="true"] .st-ice2 {
   animation:
-    kv-st-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) 0.83s both,
+    kv-st-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) 0.83s backwards,
     kv-st-rock 5.3s ease-in-out 1.9s infinite reverse;
 }
 .kv-story[data-painted="true"] .st-ice3 {
   animation:
-    kv-st-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) 0.94s both,
+    kv-st-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) 0.94s backwards,
     kv-st-rock 4.9s ease-in-out 1.75s infinite;
 }
 @keyframes kv-st-drop {
-  0%  { transform: translateY(-70px) rotate(-14deg); opacity: 0; }
-  30% { opacity: 1; }
+  0%   { transform: translateY(calc(-70 * var(--u))) rotate(-14deg); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
 }
 @keyframes kv-st-rock {
   0%, 100% { transform: rotate(0deg) translateY(0); }
-  30%      { transform: rotate(-2.2deg) translateY(-2px); }
-  65%      { transform: rotate(1.6deg) translateY(-1px); }
+  30%      { transform: rotate(-2.2deg) translateY(calc(-2 * var(--u))); }
+  65%      { transform: rotate(1.6deg) translateY(calc(-1 * var(--u))); }
 }
 
 /* The burst lines pop out, then pulse. */
 .kv-story[data-painted="true"] .st-burst,
 .kv-story[data-painted="true"] .st-burst2 {
   animation:
-    kv-st-pop 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) 1.1s both,
+    kv-st-pop 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) 1.1s backwards,
     kv-st-pulse 3s ease-in-out 1.6s infinite;
 }
 .kv-story[data-painted="true"] .st-burst2 { animation-delay: 1.2s, 2s; }
 @keyframes kv-st-pop {
   from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 @keyframes kv-st-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -892,19 +882,15 @@
 }
 @keyframes kv-st-drift-left {
   from { transform: translateX(0); opacity: 1; }
-  to   { transform: translateX(-6px); opacity: 0.65; }
+  to   { transform: translateX(calc(-6 * var(--u))); opacity: 0.65; }
 }
 @keyframes kv-st-drift-right {
   from { transform: translateX(0); opacity: 1; }
-  to   { transform: translateX(6px); opacity: 0.65; }
+  to   { transform: translateX(calc(6 * var(--u))); opacity: 0.65; }
 }
 
 /* Glints on the ice and the cap. */
-.kv-story-art .st-sparkle {
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-}
+.kv-story-art .st-sparkle { opacity: 0; }
 .kv-story[data-painted="true"] .st-sparkle {
   animation: kv-st-glint 5s ease-in-out calc(1.6s + var(--d)) infinite;
 }

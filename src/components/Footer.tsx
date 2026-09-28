@@ -6,6 +6,7 @@ import { productHandles, shopOrder } from '@/config/shopify'
 import { Link } from '@/router'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import { WORDMARK_VIEWBOX, wordmarkLetters } from './wordmarkPaths'
+import { ArtLayer } from './ArtLayer'
 
 const information = footerSections.find((section) => section.title === 'Information')?.links ?? []
 const legal = footerSections.find((section) => section.title === 'Legal')?.links ?? []
@@ -124,13 +125,14 @@ export function Footer() {
 }
 
 /**
- * The wordmark as live SVG, one path per letter, so each can hop: a squash,
- * a jump, a squashy landing, rippling left to right, then a rest before the
- * next wave (all in index.css). It pauses off screen; with reduced motion it
- * simply sits there.
+ * The wordmark, one layer per letter, so each can hop: a squash, a jump, a
+ * squashy landing, rippling left to right, then a rest before the next wave
+ * (all in index.css). Each letter moves as a whole layer on the GPU rather
+ * than making the whole wordmark redraw every frame. It pauses off screen;
+ * with reduced motion it simply sits there.
  */
 function HoppingWordmark({ className }: { className?: string }) {
-  const ref = useRef<SVGSVGElement | null>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
   const [live, setLive] = useState(false)
 
   useEffect(() => {
@@ -145,19 +147,25 @@ function HoppingWordmark({ className }: { className?: string }) {
   }, [])
 
   return (
-    <svg
+    <div
       ref={ref}
       role="img"
       aria-label="Kelvo"
-      viewBox={`0 0 ${WORDMARK_VIEWBOX.width} ${WORDMARK_VIEWBOX.height}`}
-      fill="var(--color-paper)"
-      fillRule="evenodd"
       data-live={live}
-      className={`kv-logo-hop overflow-visible ${className ?? ''}`}
+      className={`kv-logo-hop ${className ?? ''}`}
+      style={{ aspectRatio: `${WORDMARK_VIEWBOX.width} / ${WORDMARK_VIEWBOX.height}` }}
     >
       {wordmarkLetters.map((letter, index) => (
-        <path key={letter.letter} d={letter.d} style={{ '--i': index } as CSSProperties} />
+        <ArtLayer
+          key={letter.letter}
+          view={WORDMARK_VIEWBOX}
+          origin="bottom"
+          className="kv-letter"
+          style={{ '--i': index } as CSSProperties}
+        >
+          <path d={letter.d} fill="var(--color-paper)" />
+        </ArtLayer>
       ))}
-    </svg>
+    </div>
   )
 }

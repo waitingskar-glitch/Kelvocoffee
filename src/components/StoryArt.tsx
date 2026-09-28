@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { StoryGroup, StoryLayer } from './storyArtPaths'
+import { whenIdle } from '@/lib/whenIdle'
 import { shiftedColour, type ShiftPart } from '@/lib/colourShift'
+import { ArtLayer } from './ArtLayer'
 import { cn } from '@/lib/cn'
 
 type Art = typeof import('./storyArtPaths').storyArt
@@ -44,7 +46,8 @@ const px = ([x, y]: [number, number]) => `${x}px ${y}px`
  * and a half): the shadows and grounds spread out, the pouch pops up, the
  * glass's ink is drawn in and the coffee poured, the loose ice drops in one
  * cube at a time, the speed lines wipe in and the burst lines pop. Then it
- * idles, very quietly: the coffee and the coral shift a shade, the ice cubes rock, the burst lines pulse, the
+ * idles, very quietly: the coffee and the coral shift a shade (a tinted copy
+ * fading over them), the ice cubes rock, the burst lines pulse, the
  * speed lines drift and the ice glints. Off screen it pauses; with reduced
  * motion it is simply there. The motion is in index.css (STORY ART).
  */
@@ -58,7 +61,14 @@ export function StoryArt({ className }: { className?: string }) {
   useEffect(() => {
     const element = ref.current
     if (!element) return
-    const load = () => void import('./storyArtPaths').then((module) => setArt(module.storyArt))
+    let requested = false
+    const load = () => {
+      if (requested) return
+      requested = true
+      void import('./storyArtPaths').then((module) => setArt(module.storyArt))
+    }
+    // Parse and draw it in the first quiet moment after the page loads, not mid-scroll.
+    const cancelIdle = whenIdle(load)
     if (!('IntersectionObserver' in window)) {
       load()
       setLive(true)
@@ -86,6 +96,7 @@ export function StoryArt({ className }: { className?: string }) {
     painter.observe(element)
     watcher.observe(element)
     return () => {
+      cancelIdle()
       loader.disconnect()
       painter.disconnect()
       watcher.disconnect()
@@ -99,72 +110,72 @@ export function StoryArt({ className }: { className?: string }) {
       aria-hidden="true"
       data-live={live}
       data-painted={painted}
-      className={cn('kv-story aspect-[1002/565]', className)}
+      className={cn('kv-story relative aspect-[1002/565] [container-type:inline-size]', className)}
     >
       {art && (
-        <svg
-          viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-          fillRule="evenodd"
-          className="kv-story-art block size-full"
-          // Crisp edges: the drawing is flat colour, so never blur or resample it.
-          shapeRendering="geometricPrecision"
-        >
+        // A stack of layers, one per moving part, so the idle motion moves and
+        // fades whole layers on the GPU instead of redrawing the traced curves.
+        <div className="kv-story-art absolute inset-0">
           {ORDER.map((group) => (
-            <Group
-              key={group}
-              group={group}
-              layers={art.groups[group]}
-              pivot={PIVOT[group]}
-            />
+            <Group key={group} group={group} layers={art.groups[group]} pivot={PIVOT[group]} />
           ))}
 
+          {/* The glints, each a layer of its own. */}
           {SPARKLES.map(([x, y, size], index) => (
-            <g key={index} transform={`translate(${x} ${y}) scale(${size})`}>
+            <ArtLayer key={index} view={VIEW} className="st-sparkle" style={{ '--d': `${index * 1.1}s` } as CSSProperties}>
               <path
                 d={STAR}
+                transform={`translate(${x} ${y}) scale(${size})`}
                 fill="#fff"
                 stroke={INK}
                 strokeWidth={1.6 / size}
                 strokeLinejoin="round"
-                className="st-sparkle"
-                style={{ '--d': `${index * 1.1}s` } as CSSProperties}
               />
-            </g>
+            </ArtLayer>
           ))}
-        </svg>
+        </div>
       )}
     </div>
   )
 }
 
-function Group({
-  group,
-  layers,
-  pivot,
-}: {
-  group: StoryGroup
-  layers: StoryLayer[]
-  pivot?: [number, number]
-}) {
+function Group({ group, layers, pivot }: { group: StoryGroup; layers: StoryLayer[]; pivot?: [number, number] }) {
   const tintPart = TINT[group]
   const colourCount = layers.filter((layer) => layer.fill !== INK).length
+  // The lightest layer (the part's whole silhouette), the darkest and the ink never shift.
+  const tintOf = (fill: string, index: number) =>
+    tintPart && fill !== INK && index >= 1 && index <= colourCount - 2 ? shiftedColour(fill, index, tintPart) : null
+  const origin = pivot ?? (group.startsWith('ice') ? 'bottom' : 'center')
+  // The grounds spread out path by path from a point in the drawing's units, so that layer keeps the full box.
+  const crop = group !== 'ground'
+
   return (
-    <g className={`st-g st-${group}`} style={pivot ? ({ '--pivot': px(pivot) } as CSSProperties) : undefined}>
-      {layers.map((layer, index) => {
-        const ink = layer.fill === INK
-        // The lightest layer (the part's whole silhouette) and the darkest never shift.
-        const tint =
-          tintPart && !ink && index >= 1 && index <= colourCount - 2 ? shiftedColour(layer.fill, index, tintPart) : null
-        return (
+    <>
+      <ArtLayer
+        view={VIEW}
+        origin={origin}
+        crop={crop}
+        className={`st-g st-${group}`}
+        style={pivot ? ({ '--pivot': px(pivot) } as CSSProperties) : undefined}
+      >
+        {layers.map((layer, index) => (
           <path
             key={index}
             d={layer.d}
             fill={layer.fill}
-            className={ink ? 'st-ink' : tint ? 'st-layer st-tint' : 'st-layer'}
-            style={{ '--i': index, '--c': layer.fill, ...(tint ? { '--tint': tint } : {}) } as CSSProperties}
+            className={layer.fill === INK ? 'st-ink' : 'st-layer'}
+            style={{ '--i': index } as CSSProperties}
           />
-        )
-      })}
-    </g>
+        ))}
+      </ArtLayer>
+      {/* The colour shift: a tinted copy of the part fading in and out over it. */}
+      {tintPart && (
+        <ArtLayer view={VIEW} origin={origin} className={`st-g st-${group} st-tint`}>
+          {layers.map((layer, index) => (
+            <path key={index} d={layer.d} fill={tintOf(layer.fill, index) ?? layer.fill} />
+          ))}
+        </ArtLayer>
+      )}
+    </>
   )
 }

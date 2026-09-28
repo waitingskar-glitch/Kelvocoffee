@@ -180,7 +180,7 @@ export function HowItWorks() {
           )}
         >
           <div className="flex min-h-0 w-full flex-1 flex-col px-6 py-8 max-lg:[@media(max-height:720px)]:py-6 sm:px-10 sm:py-10 lg:px-16 lg:py-12">
-            <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] gap-x-16 gap-y-5 max-lg:[@media(max-height:720px)]:gap-y-3 [grid-template-areas:'heading'_'art'_'steps'] lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)_auto_auto_minmax(0,1fr)] lg:gap-y-0 lg:[grid-template-areas:'art_.'_'art_heading'_'art_steps'_'art_.']">
+            <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,3fr)_minmax(auto,2fr)] gap-x-16 gap-y-5 max-lg:[@media(max-height:720px)]:gap-y-3 [grid-template-areas:'heading'_'art'_'steps'] lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)_auto_auto_minmax(0,1fr)] lg:gap-y-0 lg:[grid-template-areas:'art_.'_'art_heading'_'art_steps'_'art_.']">
               <h2 id="ritual-heading" className="text-h2 text-center [grid-area:heading] lg:mb-7">
                 How to Kelvo.
               </h2>
@@ -190,44 +190,44 @@ export function HowItWorks() {
                   the drawing is as big as fits it, up to a cap. */}
               <div className="flex min-h-0 items-center justify-center [container-type:size] [grid-area:art]">
                 <div
-                  className="aspect-[320/360] w-[min(100cqw,18rem,100cqh*320/360)] lg:w-[min(100cqw,25rem,100cqh*320/360)]"
+                  className="aspect-[320/360] w-[min(100cqw,24rem,100cqh*320/360)] lg:w-[min(100cqw,25rem,100cqh*320/360)]"
                   style={{ perspective: '900px' }}
                 >
                   <PourSequence />
                 </div>
               </div>
 
-              <div className="mx-auto w-full max-w-[30rem] [grid-area:steps] sm:max-w-[40rem] lg:max-w-[30rem]">
-                <ol className="flex flex-col gap-1 sm:grid sm:grid-cols-3 sm:gap-2 lg:flex">
+              <div className="mx-auto w-full max-w-[30rem] self-center [grid-area:steps]">
+                <ol className="flex flex-col gap-1 sm:gap-1.5 lg:gap-0">
                   {brand.ritual.map((item, index) => {
                     const active = activeStep === index
                     return (
                       <li
                         key={item.step}
                         className={cn(
-                          // Below lg everything is centred in its box: on phones the number
-                          // and name share a line with the copy under them, on tablets they
-                          // stack. From lg the number sits beside the name and copy.
-                          'flex flex-col items-center gap-1 rounded-md border-2 px-4 py-2 text-center transition-[background-color,border-color] duration-300 max-sm:[@media(max-height:720px)]:py-1 sm:gap-2 sm:px-3 sm:py-3 lg:grid lg:grid-cols-[auto_1fr] lg:items-center lg:gap-x-5 lg:gap-y-0 lg:px-4 lg:py-4 lg:text-left lg:[grid-template-areas:"num_title"_"num_copy"]',
+                          // The steps stack one under another at every size, the number beside
+                          // the name and copy; below lg they're compact, so the drawing above
+                          // gets about 60% of the panel and the steps about 40%.
+                          'grid grid-cols-[auto_1fr] items-center gap-x-3 rounded-md border-2 px-3 py-1.5 text-left max-sm:[@media(max-height:720px)]:py-1 transition-[background-color,border-color] duration-300 [grid-template-areas:"num_title"_"num_copy"] sm:gap-x-4 sm:px-4 sm:py-2.5 lg:gap-x-5 lg:py-4',
                           active ? 'kv-grain ground-paper border-ink' : 'border-transparent',
                         )}
                       >
-                        <div className="flex items-center gap-3 sm:flex-col sm:gap-2 lg:contents">
+                        <div className="contents">
                           <span
                             aria-hidden="true"
                             className={cn(
-                              'grid size-10 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-[1.35rem] leading-none transition-colors duration-300 lg:size-12 lg:[grid-area:num] lg:text-[1.6rem]',
+                              'grid size-8 shrink-0 place-items-center rounded-full border-2 border-ink font-display text-[1.1rem] leading-none transition-colors duration-300 [grid-area:num] sm:size-10 sm:text-[1.35rem] lg:size-12 lg:text-[1.6rem]',
                               // The active step's number is filled: Ink disc, Paper figure.
                               active && 'bg-ink text-paper',
                             )}
                           >
                             {index + 1}
                           </span>
-                          <h3 className="text-[1.6rem] leading-none sm:text-[1.85rem] lg:self-end lg:text-[2.2rem] lg:[grid-area:title]">
+                          <h3 className="self-end text-[1.25rem] leading-none [grid-area:title] sm:text-[1.6rem] lg:text-[2.2rem]">
                             {item.step}
                           </h3>
                         </div>
-                        <p className="text-[1rem] font-medium sm:mt-0 lg:mt-1.5 lg:self-start lg:text-[1.02rem] lg:[grid-area:copy]">
+                        <p className="mt-0.5 self-start text-[0.85rem] leading-snug font-medium [grid-area:copy] sm:mt-1 sm:text-[0.98rem] lg:mt-1.5 lg:text-[1.02rem]">
                           {item.copy}
                         </p>
                       </li>

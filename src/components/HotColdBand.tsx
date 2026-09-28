@@ -1,5 +1,7 @@
-import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { HotColdArt } from './hotColdArt'
+import { whenIdle } from '@/lib/whenIdle'
+import { ArtLayer } from './ArtLayer'
 import { shiftedColour } from '@/lib/colourShift'
 
 type Art = { hot: HotColdArt; cold: HotColdArt }
@@ -64,10 +66,9 @@ const px = ([x, y]: [number, number]) => `${x}px ${y}px`
  * painted in and brought to life without changing the drawing itself.
  *
  * The first time the section comes into view each cup paints itself, over
- * about two and a half seconds: the splash bursts out, the ink lines are drawn in top to
+ * about a second and a half: the splash bursts out, the ink lines are drawn in top to
  * bottom and the coffee is poured in, layer by layer. After that it idles,
- * barely: the ink wavers like a hand-drawn cartoon, the colours shift a shade,
- * the splash breathes, the odd droplet drifts out, steam rises off the hot cup
+ * barely: the colours shift a shade, the splash breathes, the glass rocks, the odd droplet drifts out, steam rises off the hot cup
  * and the ice glints. The words themselves never move. Off screen everything
  * pauses; with reduced motion the drawings are simply there. All the motion
  * lives in index.css.
@@ -82,7 +83,14 @@ export function HotColdBand() {
   useEffect(() => {
     const element = ref.current
     if (!element) return
-    const load = () => void import('./hotColdArt').then((module) => setArt(module.hotColdArt))
+    let requested = false
+    const load = () => {
+      if (requested) return
+      requested = true
+      void import('./hotColdArt').then((module) => setArt(module.hotColdArt))
+    }
+    // Parse and draw it in the first quiet moment after the page loads, not mid-scroll.
+    const cancelIdle = whenIdle(load)
     if (!('IntersectionObserver' in window)) {
       load()
       setLive(true)
@@ -112,6 +120,7 @@ export function HotColdBand() {
     painter.observe(element)
     watcher.observe(element)
     return () => {
+      cancelIdle()
       loader.disconnect()
       painter.disconnect()
       watcher.disconnect()
@@ -130,7 +139,7 @@ export function HotColdBand() {
           from lg the cups sit in opposite corners and the line in the middle. */}
       <div className="kv-surface ground-paper relative mx-auto flex max-w-[75rem] flex-col overflow-hidden rounded-xl border border-[color:var(--grid-rule)] [--grid-rule:rgb(27_25_24_/_0.055)] [background-clip:padding-box] [background-position:-1px_-1px] lg:block lg:min-h-[46rem]">
         <div className="kv-hc-drift-a relative -mt-[2%] -ml-[12%] w-[88%] self-start sm:-ml-[6%] sm:w-[64%] lg:absolute lg:top-[4%] lg:left-[-6%] lg:m-0 lg:w-[47%]">
-          <CupArt kind="hot" art={art?.hot} live={live} boil={!reducedMotion} />
+          <CupArt kind="hot" art={art?.hot} />
         </div>
 
         <div className="relative z-10 -my-[7%] px-6 text-center sm:-my-[6%] lg:absolute lg:inset-0 lg:m-0 lg:flex lg:items-center lg:justify-center">
@@ -144,146 +153,140 @@ export function HotColdBand() {
         </div>
 
         <div className="kv-hc-drift-b relative -mr-[12%] w-[88%] self-end sm:-mr-[6%] sm:w-[64%] lg:absolute lg:right-[-6%] lg:bottom-[1%] lg:m-0 lg:w-[47%]">
-          <CupArt kind="cold" art={art?.cold} live={live} boil={!reducedMotion} />
+          <CupArt kind="cold" art={art?.cold} />
         </div>
       </div>
     </section>
   )
 }
 
-/** Stagger index, the colour to shift towards and (for the splash) a small drift of its own, per layer. */
-function layerStyle(index: number, tint: string | null, drift = false): CSSProperties {
-  const style: Record<string, string | number> = { '--i': index }
-  if (tint) style['--tint'] = tint
-  if (drift) {
-    style['--fx'] = `${(Math.cos(index * 2.1) * 4.7).toFixed(1)}px`
-    style['--fy'] = `${(Math.sin(index * 2.1) * 3.5).toFixed(1)}px`
-  }
-  return style as CSSProperties
+/** A point in viewBox units as a percentage of the drawing's box, for layers that move as whole elements. */
+const pct = ([x, y]: [number, number]) => `${((x / VIEW.width) * 100).toFixed(2)}% ${((y / VIEW.height) * 100).toFixed(2)}%`
+
+/** One stacked layer of the drawing: the same viewBox as every other, so they line up exactly. */
+function Layer({ className, style, children }: { className?: string; style?: CSSProperties; children: ReactNode }) {
+  return (
+    <svg
+      viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
+      fillRule="evenodd"
+      aria-hidden="true"
+      className={`absolute inset-0 block size-full overflow-visible ${className ?? ''}`}
+      style={style}
+    >
+      {children}
+    </svg>
+  )
 }
 
-function CupArt({ kind, art, live, boil }: { kind: Kind; art?: HotColdArt; live: boolean; boil: boolean }) {
-  const svgRef = useRef<SVGSVGElement | null>(null)
-  const boilId = `${useId().replace(/:/g, '')}-boil`
+/**
+ * One cup, as a stack of layers rather than one SVG. The idle motion moves
+ * whole layers (the splash, the glass, the shine lines), and the colour shift
+ * is a second, tinted copy of each fading in and out over it, so the browser
+ * only moves and fades pictures it has already drawn, on the GPU, instead of
+ * redrawing thousands of traced curves every frame. Only the paint-in (once)
+ * and the small effects (steam, droplets, glints) draw as they go.
+ */
+function CupArt({ kind, art }: { kind: Kind; art?: HotColdArt }) {
   const pivot = PIVOT[kind]
-
-  // The line boil is SMIL, which CSS can't pause, so it is stopped off screen here.
-  useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) return
-    if (live) svg.unpauseAnimations()
-    else svg.pauseAnimations()
-  }, [live, art])
-
   const glassLayers = art?.groups.glass ?? []
   const colourCount = glassLayers.filter((layer) => layer.fill !== INK).length
+  // Only the coffee's own tones shift; the lightest layer (the glass's whole
+  // silhouette), the darkest (along the outline) and the ink stay put.
+  const glassTint = (fill: string, index: number) =>
+    fill !== INK && index >= 1 && index <= colourCount - 2 ? (shiftedColour(fill, index, 'coffee') ?? fill) : fill
 
   return (
     // The box holds its shape before the drawing arrives, so nothing jumps.
-    <div className="aspect-[972/793] w-full">
+    <div className="relative aspect-[972/793] w-full [container-type:inline-size]">
       {art && (
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-          fillRule="evenodd"
-          aria-hidden="true"
-          className={`kv-hc-art kv-hc-${kind} block size-full`}
+        <div
+          className={`kv-hc-art kv-hc-${kind} absolute inset-0`}
           style={{ '--pivot': px(pivot.centre) } as CSSProperties}
         >
-          <defs>
-            {/* Hand-drawn "line boil": the ink wavers by a unit or two, redrawn about four times a second. */}
-            <filter id={boilId} x="-5%" y="-5%" width="110%" height="110%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="1" seed="1">
-                <animate
-                  attributeName="seed"
-                  values="1;4;7;2;9"
-                  dur="1.2s"
-                  calcMode="discrete"
-                  repeatCount="indefinite"
-                />
-              </feTurbulence>
-              <feDisplacementMap in="SourceGraphic" scale="2.6" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-          </defs>
+          <div className="hc-splash absolute inset-0" style={{ transformOrigin: pct(pivot.centre) }}>
+            <Layer>
+              {art.groups.splash.map((layer, index) => (
+                <path key={index} d={layer.d} fill={layer.fill} className="hc-sp" style={{ '--i': index } as CSSProperties} />
+              ))}
+            </Layer>
+            <Layer className="hc-tint">
+              {art.groups.splash.map((layer, index) => (
+                <path key={index} d={layer.d} fill={shiftedColour(layer.fill, index, kind) ?? layer.fill} />
+              ))}
+            </Layer>
+          </div>
 
-          <g className="hc-splash">
-            {art.groups.splash.map((layer, index) => (
-              <path
-                key={index}
-                d={layer.d}
-                fill={layer.fill}
-                className="hc-sp"
-                style={{ ...layerStyle(index, shiftedColour(layer.fill, index, kind), true), '--c': layer.fill } as CSSProperties}
-              />
-            ))}
-          </g>
-
-          {/* Droplets fly out from behind the glass. */}
-          <g>
-            {DROPS.map((drop, index) => (
+          {/* Droplets fly out from behind the glass, each a layer of its own (moves in drawing units, --u). */}
+          {DROPS.map((drop, index) => (
+            <ArtLayer
+              key={index}
+              view={VIEW}
+              className="hc-drop"
+              style={
+                {
+                  '--dx': `calc(${drop.dx} * var(--u))`,
+                  '--dy': `calc(${drop.dy} * var(--u))`,
+                  '--d': `${drop.delay}s`,
+                } as CSSProperties
+              }
+            >
               <circle
-                key={index}
                 cx={pivot.centre[0]}
                 cy={pivot.centre[1]}
                 r={drop.r}
                 fill={DROP_COLOURS[kind][index % DROP_COLOURS[kind].length]}
-                className="hc-drop"
-                style={{ '--dx': `${drop.dx}px`, '--dy': `${drop.dy}px`, '--d': `${drop.delay}s` } as CSSProperties}
               />
-            ))}
-          </g>
+            </ArtLayer>
+          ))}
 
-          <g className="hc-glass" style={{ transformOrigin: px(pivot.base) }}>
-            {glassLayers.map((layer, index) => {
-              const ink = layer.fill === INK
-              // Only the coffee's own tones shift; the lightest layer (the
-              // glass's whole silhouette) and the darkest (along the outline) stay put.
-              const tint =
-                !ink && index >= 1 && index <= colourCount - 2 ? shiftedColour(layer.fill, index, 'coffee') : null
-              return (
+          <div className="hc-glass absolute inset-0" style={{ transformOrigin: pct(pivot.base) }}>
+            <Layer>
+              {glassLayers.map((layer, index) => (
                 <path
                   key={index}
                   d={layer.d}
                   fill={layer.fill}
-                  filter={ink && boil ? `url(#${boilId})` : undefined}
-                  className={ink ? 'hc-ink' : tint ? 'hc-gl hc-tint' : 'hc-gl'}
-                  style={{ ...layerStyle(index, tint), '--c': layer.fill } as CSSProperties}
+                  className={layer.fill === INK ? 'hc-ink' : 'hc-gl'}
+                  style={{ '--i': index } as CSSProperties}
                 />
-              )
-            })}
-          </g>
+              ))}
+            </Layer>
+            <Layer className="hc-tint hc-tint-glass">
+              {glassLayers.map((layer, index) => (
+                <path key={index} d={layer.d} fill={glassTint(layer.fill, index)} />
+              ))}
+            </Layer>
+          </div>
 
           {art.groups.ticks && pivot.ticks && (
-            <g className="hc-ticks" style={{ transformOrigin: px(pivot.ticks) }}>
+            <Layer className="hc-ticks" style={{ transformOrigin: pct(pivot.ticks) }}>
               {art.groups.ticks.map((layer, index) => (
-                <path key={index} d={layer.d} fill={layer.fill} filter={boil ? `url(#${boilId})` : undefined} />
+                <path key={index} d={layer.d} fill={layer.fill} />
               ))}
-            </g>
+            </Layer>
           )}
 
-          {kind === 'hot' && (
-            <g transform="scale(0.7)" fill="none" stroke={INK} strokeWidth="11" strokeLinecap="round">
-              {STEAM.map((d, index) => (
-                <path key={index} d={d} pathLength={1} className={`hc-steam hc-steam-${index + 1}`} />
-              ))}
-            </g>
-          )}
+          {kind === 'hot' &&
+            STEAM.map((d, index) => (
+              <ArtLayer key={index} view={VIEW} origin="bottom" className={`hc-steam hc-steam-${index + 1}`}>
+                <path d={d} transform="scale(0.7)" fill="none" stroke={INK} strokeWidth="11" strokeLinecap="round" />
+              </ArtLayer>
+            ))}
 
           {kind === 'cold' &&
             SPARKLES.map(([x, y, size], index) => (
-              <g key={index} transform={`translate(${x} ${y}) scale(${size})`}>
+              <ArtLayer key={index} view={VIEW} className="hc-sparkle" style={{ '--d': `${index * 0.8}s` } as CSSProperties}>
                 <path
                   d={STAR}
+                  transform={`translate(${x} ${y}) scale(${size})`}
                   fill="#fff"
                   stroke={INK}
                   strokeWidth={2.4 / size}
                   strokeLinejoin="round"
-                  className="hc-sparkle"
-                  style={{ '--d': `${index * 0.8}s` } as CSSProperties}
                 />
-              </g>
+              </ArtLayer>
             ))}
-        </svg>
+        </div>
       )}
     </div>
   )

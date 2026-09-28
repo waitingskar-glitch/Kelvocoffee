@@ -175,6 +175,7 @@ export function HamperBuilder() {
                           width={meta.pouch.width}
                           height={meta.pouch.height}
                           loading="lazy"
+                          decoding="async"
                           className="h-[88%] w-auto object-contain transition-transform duration-300 group-enabled:group-hover:-translate-y-0.5"
                         />
                       </span>

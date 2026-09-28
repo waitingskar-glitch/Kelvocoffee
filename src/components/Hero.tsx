@@ -41,13 +41,15 @@ export function Hero() {
     <section
       id="top"
       aria-labelledby="hero-heading"
-      className="flex min-h-svh flex-col px-3 pt-[calc(var(--spacing-header)+0.75rem)] pb-3 sm:px-4 sm:pt-[calc(var(--spacing-header)+1rem)] sm:pb-4 lg:pb-0"
+      className="flex min-h-svh flex-col [--roller:3.25rem] sm:[--roller:3.5rem] px-3 pt-[calc(var(--spacing-header)+0.75rem)] pb-3 sm:px-4 sm:pt-[calc(var(--spacing-header)+1rem)] sm:pb-4 lg:pb-0"
     >
       {/* One screen tall. Below lg the screen height is budgeted: the caramel
           box takes 35% (the pouches stand in it and hang 15% of their height
           below its edge), the headline and subtitle 25%, and the button
           and a clear margin under it share the rest. */}
-      <div className="mx-auto flex w-full max-w-[75rem] flex-1 flex-col gap-3 sm:gap-4 lg:grid lg:min-h-[max(36rem,calc(100svh-var(--spacing-header)-2rem))] lg:grid-cols-[3fr_5fr]">
+      <DeliveryRoller />
+
+      <div className="mx-auto flex w-full max-w-[75rem] flex-1 flex-col gap-3 sm:gap-4 lg:grid lg:min-h-[max(36rem,calc(100svh-var(--spacing-header)-2rem-var(--roller)))] lg:grid-cols-[3fr_5fr]">
         {/* --- Media panel, with the packs across the seam --- */}
         <div className="kv-surface ground-caramel relative z-10 h-[35svh] shrink-0 rounded-xl lg:h-auto">
           {heroMedia.videoSrc && (
@@ -141,6 +143,46 @@ export function Hero() {
         </div>
       </div>
     </section>
+  )
+}
+
+const ROLLER_TEXT = 'Free delivery on orders above ₹699'
+/** Enough copies that one half of the strip is wider than any screen. */
+const ROLLER_REPEAT = 8
+
+/**
+ * The delivery line rolling across an Ink strip above the hero panels. The
+ * strip holds two identical halves and slides one half's width, so the loop
+ * never shows a seam. Screen readers get the line once; with reduced motion
+ * it stands still.
+ */
+function DeliveryRoller() {
+  const half = (copy: number) => (
+    <div className="flex shrink-0 items-center" aria-hidden={copy > 0 ? true : undefined}>
+      {Array.from({ length: ROLLER_REPEAT }, (_, index) => (
+        <span key={index} className="flex items-center" aria-hidden={index > 0 ? true : undefined}>
+          <span className="px-5 sm:px-7">{ROLLER_TEXT}</span>
+          <svg viewBox="-1 -1 2 2" className="size-3 shrink-0 fill-caramel" aria-hidden="true">
+            <path d="M0-1C.12-.12.12-.12 1 0C.12.12.12.12 0 1C-.12.12-.12.12-1 0C-.12-.12-.12-.12 0-1Z" />
+          </svg>
+        </span>
+      ))}
+    </div>
+  )
+
+  return (
+    <div
+      className="animate-fade-in kv-grain ground-ink mx-auto mb-3 flex h-[calc(var(--roller)-0.75rem)] w-full max-w-[75rem] shrink-0 items-center overflow-hidden rounded-xl shape-squircle select-none sm:mb-4 sm:h-[calc(var(--roller)-1rem)]"
+      role="note"
+    >
+      {/* The line fades in and out at the strip's ends; the strip itself stays solid. */}
+      <div className="flex h-full w-full items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent_1rem,black_4rem,black_calc(100%-4rem),transparent_calc(100%-1rem))]">
+        <div className="animate-marquee flex w-max font-display text-[1.05rem] leading-none tracking-[0.02em] uppercase [animation-duration:60s] sm:text-[1.2rem]">
+          {half(0)}
+          {half(1)}
+        </div>
+      </div>
+    </div>
   )
 }
 

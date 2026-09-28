@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { claimArt, type ClaimArtName } from './claimArtPaths'
 import { claimArtWashes } from './claimArtWashes'
+import { ArtLayer } from './ArtLayer'
 
 /** Five plain facts, each true to the pack, each with its own hand-drawn art. */
 const claims: Array<{ label: string; key: string; art: ClaimArtName; note?: boolean }> = [
@@ -45,9 +46,11 @@ function artWidth(name: ClaimArtName): string {
 }
 
 /**
- * The drawing, as inline SVG in Ink so its parts can move. It is on screen
- * from the start (no entrance) and idles with a small loop of its own
- * (steam rises, the truck rolls, the flavours bob). All in index.css.
+ * The drawing, in Ink, as a stack of layers: one per part, so each part's
+ * idle loop (steam rises, the truck rolls, the flavours bob) moves a whole
+ * layer on the GPU. Moved inside a single SVG, a part would make the whole
+ * drawing redraw every frame, rough-edged washes and all. It is on screen
+ * from the start (no entrance). The motion is in index.css.
  */
 function ClaimArtSvg({ name, index }: { name: ClaimArtName; index: number }) {
   const art = claimArt[name]
@@ -59,30 +62,29 @@ function ClaimArtSvg({ name, index }: { name: ClaimArtName; index: number }) {
   const ratio = Math.sqrt(art.width / art.height)
   const scale = OPTICAL_SCALE[name]
   return (
-    <svg
+    <div
       style={{
         width: `calc(${artWidth(name)})`,
         height: `calc(var(--art) * ${(scale / ratio).toFixed(3)})`,
       }}
-      viewBox={`0 0 ${art.width} ${art.height}`}
-      fill="currentColor"
-      // Traced outlines keep their holes only under even-odd filling.
-      fillRule="evenodd"
       aria-hidden="true"
-      className={`kv-claim-art kv-art-${name} max-w-full`}
+      className={`kv-claim-art kv-art-${name} relative max-w-full`}
     >
-      <defs>
-        {/* Rough, hand-painted edges on the washes. */}
-        <filter id={`${uid}-rough`} x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed={index + 3} />
-          <feDisplacementMap in="SourceGraphic" scale="16" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </defs>
+      <svg className="absolute size-0" aria-hidden="true">
+        <defs>
+          {/* Rough, hand-painted edges on the washes. */}
+          <filter id={`${uid}-rough`} x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed={index + 3} />
+            <feDisplacementMap in="SourceGraphic" scale="16" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
 
       {art.parts.map((part) => {
         const washes = claimArtWashes[name].filter((wash) => wash.role === part.role)
         return (
-          <g key={part.role} className={`part-${part.role}`}>
+          // Cropped to the part, so the stylesheet's origins and moves (in % of the part) still hold.
+          <ArtLayer key={part.role} view={art} origin="css" className={`part-${part.role}`}>
             {washes.length > 0 && (
               <g filter={`url(#${uid}-rough)`} opacity="0.5">
                 {washes.map((wash, i) => (
@@ -90,17 +92,16 @@ function ClaimArtSvg({ name, index }: { name: ClaimArtName; index: number }) {
                 ))}
               </g>
             )}
-            <path d={part.d} />
-          </g>
+            <path d={part.d} fill="currentColor" />
+          </ArtLayer>
         )
       })}
-    </svg>
+    </div>
   )
 }
 
 export function ClaimsStrip() {
-  // The idle loops (and the rough-edge filter they re-render) only run while
-  // the strip is on screen.
+  // The idle loops only run while the strip is on screen.
   const ref = useRef<HTMLElement | null>(null)
   const [live, setLive] = useState(true)
   useEffect(() => {
@@ -145,7 +146,6 @@ export function ClaimsStrip() {
           </li>
         ))}
       </ul>
-      <p className="label mt-10 text-center text-ink/60">*Free delivery anywhere in India.</p>
     </section>
   )
 }

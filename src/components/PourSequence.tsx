@@ -1,3 +1,5 @@
+import { ArtLayer } from './ArtLayer'
+
 /**
  * "How to Kelvo" illustration, in the poster-vector style of the Hot / Cold
  * cups: heavy Ink outlines over flat colour layers stacked into tones (the
@@ -34,6 +36,8 @@ const svg = {
   strokeLinejoin: 'round',
   'aria-hidden': true,
 } as const
+
+const VIEW = { width: 320, height: 360 } as const
 
 const INK = 'var(--color-ink)'
 const PAPER = 'var(--color-paper)'
@@ -120,44 +124,55 @@ export function PourSequence() {
       aria-label="A Kelvo pack pours 10 ml of concentrate into a glass, 150 ml of milk and two sugar cubes go in, and the glass is stirred"
       style={{ transformStyle: 'preserve-3d', transform: 'rotateX(16deg) rotateY(-16deg) scale(0.92)', willChange: 'transform' }}
     >
-      {/* ---- Back: the splash, floor shadow, ground strokes ---- */}
-      <svg {...svg} className={layer} style={{ transform: 'translateZ(-30px)' }}>
-        <g className="kv-splash" opacity={0} style={fillBox}>
-          <g filter="url(#kv-pour-rough)">
-            {/* A broad wash under the strokes, and a few blotches, so it reads as paint, not feathers. */}
-            <ellipse cx="158" cy="236" rx="118" ry="66" fill={SPLASH.light} transform="rotate(-36 158 236)" />
-            {SPLASH_STROKES.map((stroke, index) => (
-              <path key={index} d={stroke.d} fill={SPLASH[stroke.tone]} />
-            ))}
-            <ellipse cx="94" cy="250" rx="34" ry="16" fill={SPLASH.mid} transform="rotate(-40 94 250)" />
-            <ellipse cx="240" cy="186" rx="30" ry="14" fill={SPLASH.mid} transform="rotate(-32 240 186)" />
-            <ellipse cx="212" cy="278" rx="22" ry="10" fill={SPLASH.deep} transform="rotate(-30 212 278)" />
-          </g>
-          {/* Screen-print misregistration: a few strokes outlined again in the deep tone, knocked off register. */}
-          <g filter="url(#kv-pour-rough)" stroke={SPLASH.deep} strokeWidth={2.5} transform="translate(4 3)" opacity={0.8}>
-            {SPLASH_STROKES.filter((stroke) => stroke.tone === 'mid')
-              .slice(0, 3)
-              .map((stroke, index) => (
-                <path key={index} d={stroke.d} />
+      {/* ---- Back: the splash (its own layer, so the scroll moves it on the GPU
+           and its painterly filter is drawn once), floor shadow, ground strokes ---- */}
+      <div className={layer} style={{ transform: 'translateZ(-30px)' }}>
+        <ArtLayer view={VIEW} className="kv-splash" style={{ opacity: 0, willChange: 'transform, opacity' }}>
+          <defs>
+            {/* Painterly edges on the splash. */}
+            <filter id="kv-pour-rough" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="7" />
+              <feDisplacementMap in="SourceGraphic" scale="15" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <g filter="url(#kv-pour-rough)">
+              {/* A broad wash under the strokes, and a few blotches, so it reads as paint, not feathers. */}
+              <ellipse cx="158" cy="236" rx="118" ry="66" fill={SPLASH.light} transform="rotate(-36 158 236)" />
+              {SPLASH_STROKES.map((stroke, index) => (
+                <path key={index} d={stroke.d} fill={SPLASH[stroke.tone]} />
               ))}
-          </g>
-          {/* A sprinkle of grounds at the foot, like the cocoa on the Hot cup. */}
-          <g fill={COFFEE.brown}>
-            {GROUNDS.map(([x, y, r], index) => (
-              <circle key={index} cx={x} cy={y} r={r} />
+              <ellipse cx="94" cy="250" rx="34" ry="16" fill={SPLASH.mid} transform="rotate(-40 94 250)" />
+              <ellipse cx="240" cy="186" rx="30" ry="14" fill={SPLASH.mid} transform="rotate(-32 240 186)" />
+              <ellipse cx="212" cy="278" rx="22" ry="10" fill={SPLASH.deep} transform="rotate(-30 212 278)" />
+            </g>
+            {/* Screen-print misregistration: a few strokes outlined again in the deep tone, knocked off register. */}
+            <g filter="url(#kv-pour-rough)" stroke={SPLASH.deep} strokeWidth={2.5} transform="translate(4 3)" opacity={0.8}>
+              {SPLASH_STROKES.filter((stroke) => stroke.tone === 'mid')
+                .slice(0, 3)
+                .map((stroke, index) => (
+                  <path key={index} d={stroke.d} />
+                ))}
+            </g>
+            {/* A sprinkle of grounds at the foot, like the cocoa on the Hot cup. */}
+            <g fill={COFFEE.brown}>
+              {GROUNDS.map(([x, y, r], index) => (
+                <circle key={index} cx={x} cy={y} r={r} />
+              ))}
+            </g>
+            {DROPLETS.map(([x, y, r, tone], index) => (
+              <circle key={index} cx={x} cy={y} r={r} fill={SPLASH[tone]} />
             ))}
+            {/* A few ink specks among the drops. */}
+            <g fill={INK}>
+              <circle cx="64" cy="252" r="1.8" />
+              <circle cx="272" cy="146" r="1.6" />
+              <circle cx="262" cy="292" r="2" />
+            </g>
           </g>
-          {DROPLETS.map(([x, y, r, tone], index) => (
-            <circle key={index} cx={x} cy={y} r={r} fill={SPLASH[tone]} />
-          ))}
-          {/* A few ink specks among the drops. */}
-          <g fill={INK}>
-            <circle cx="64" cy="252" r="1.8" />
-            <circle cx="272" cy="146" r="1.6" />
-            <circle cx="262" cy="292" r="2" />
-          </g>
-        </g>
-
+        </ArtLayer>
+      </div>
+      <svg {...svg} className={layer} style={{ transform: 'translateZ(-30px)' }}>
         <ellipse
           className="kv-floor-shadow"
           cx="160"
@@ -168,7 +183,7 @@ export function PourSequence() {
           opacity={0.12}
           style={{ ...fillBox, transform: 'scaleX(0.8)' }}
         />
-        <g stroke={INK} strokeWidth={3.5} filter="url(#kv-pour-sketch)">
+        <g stroke={INK} strokeWidth={3.5}>
           <path d="M72 326h24" />
           <path d="M228 326h28" />
         </g>
@@ -177,16 +192,6 @@ export function PourSequence() {
       {/* ---- Middle: the glass ---- */}
       <svg {...svg} className={`kv-cup-layer ${layer}`} style={{ transform: 'translateZ(0px)', ...fromBottom }}>
         <defs>
-          {/* Hand-drawn waver on the ink. */}
-          <filter id="kv-pour-sketch" x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="1" seed="4" />
-            <feDisplacementMap in="SourceGraphic" scale="2" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-          {/* Painterly edges on the splash. */}
-          <filter id="kv-pour-rough" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="7" />
-            <feDisplacementMap in="SourceGraphic" scale="15" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
           <clipPath id="kv-cup-bowl">
             <path d={INSIDE} />
           </clipPath>
@@ -253,7 +258,7 @@ export function PourSequence() {
           strokeWidth={1.5}
         />
 
-        <g stroke={INK} strokeWidth={LINE} filter="url(#kv-pour-sketch)">
+        <g stroke={INK} strokeWidth={LINE}>
           <path className="kv-cup-line" d={GLASS} />
           {/* The rim, front and back. */}
           <path className="kv-cup-line" d="M98 176a62 9 0 0 0 124 0" strokeWidth={LINE + 0.5} />
@@ -291,7 +296,7 @@ export function PourSequence() {
           <path d="M101 60c3 8 3 18 0 26M153 44c-3 8-3 16 0 22" stroke="#4a4644" strokeWidth={1.6} />
           <rect x="120" y="108" width="14" height="5" fill={INK} />
           <rect x="117" y="112" width="20" height="10" rx="2" fill={INK} />
-          <g stroke={INK} strokeWidth={LINE} filter="url(#kv-pour-sketch)">
+          <g stroke={INK} strokeWidth={LINE}>
             <rect className="kv-pouch-line" x="98" y="24" width="58" height="86" rx="10" />
             <path className="kv-pouch-line" d="M86 22l-8-8" strokeWidth={3.5} />
             <path className="kv-pouch-line" d="M82 36l-10-2" strokeWidth={3.5} />
@@ -303,7 +308,7 @@ export function PourSequence() {
           {/* The milk inside, with a cool shade. */}
           <path d="M175 62C186 66 200 66 211 62L209 98A14 14 0 0 1 195 110H193A14 14 0 0 1 179 98Z" fill="#fff" />
           <path d="M200 64C204 64 208 63 211 62L209 98A14 14 0 0 1 197 110Z" fill="#dcecf1" />
-          <g stroke={INK} strokeWidth={LINE} filter="url(#kv-pour-sketch)">
+          <g stroke={INK} strokeWidth={LINE}>
             <path className="kv-jug-line" d={JUG} />
             <path className="kv-jug-line" d="M216 52c12 2 16 10 16 18s-6 14-14 15" />
             <path className="kv-jug-line" d="M172 36l-6-8h26" />
@@ -312,7 +317,7 @@ export function PourSequence() {
           <path d="M180 44l2 18" stroke="#fff" strokeWidth={4} />
         </g>
 
-        <g filter="url(#kv-pour-sketch)">
+        <g>
           <path className="kv-stream-brew" d="M128 120c1 26 2 48 2 74" stroke={COFFEE.concentrate} strokeWidth={LINE + 1} />
           <path className="kv-stream-brew" d="M127 122c1 26 2 48 2 70" stroke="#6b4630" strokeWidth={1.6} />
           {/* Milk: Paper, ruled in Ink so it reads on a pale ground. */}
@@ -332,7 +337,7 @@ export function PourSequence() {
           ))}
         </g>
 
-        <g className="kv-sugar" opacity={0} stroke={INK} strokeWidth={3} fill="#fff" filter="url(#kv-pour-sketch)">
+        <g className="kv-sugar" opacity={0} stroke={INK} strokeWidth={3} fill="#fff">
           <rect x="144" y="112" width="14" height="14" rx="2" style={{ ...fillBox, transform: 'rotate(12deg)' }} />
           <rect x="160" y="100" width="14" height="14" rx="2" style={{ ...fillBox, transform: 'rotate(-16deg)' }} />
         </g>

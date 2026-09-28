@@ -16,7 +16,9 @@ function fit(element: HTMLElement) {
   // Small surfaces can ask for a finer grid: data-grid-module="20".
   const module = Number(element.dataset.gridModule) || MODULE
   const columns = Math.max(1, Math.round(width / module))
-  element.style.setProperty('--grid', `${(width / columns).toFixed(3)}px`)
+  const size = `${(width / columns).toFixed(3)}px`
+  // Only touch the style when the size really changes (a write repaints the panel).
+  if (element.style.getPropertyValue('--grid') !== size) element.style.setProperty('--grid', size)
 }
 
 export function installEvenGrid(): void {

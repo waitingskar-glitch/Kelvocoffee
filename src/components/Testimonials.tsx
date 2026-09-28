@@ -60,6 +60,20 @@ export function Testimonials({
   const [stops, setStops] = useState<number[]>([0])
   const [active, setActive] = useState(0)
 
+  // The card stops only change when the layout does; scrolling just picks the
+  // nearest one (and re-renders only when that changes), so a scroll frame
+  // never reads the cards' layout.
+  const positionsRef = useRef<number[]>([0])
+  const pickActive = useCallback(() => {
+    const track = trackRef.current
+    if (!track) return
+    const positions = positionsRef.current
+    let best = 0
+    positions.forEach((position, index) => {
+      if (Math.abs(position - track.scrollLeft) < Math.abs(positions[best] - track.scrollLeft)) best = index
+    })
+    setActive(best)
+  }, [])
   const measure = useCallback(() => {
     const track = trackRef.current
     const first = track?.firstElementChild as HTMLElement | null
@@ -70,30 +84,28 @@ export function Testimonials({
       const left = Math.min((child as HTMLElement).offsetLeft - first.offsetLeft, max)
       if (!positions.some((p) => Math.abs(p - left) < 4)) positions.push(left)
     }
+    positionsRef.current = positions
     setStops(positions)
-    let best = 0
-    positions.forEach((position, index) => {
-      if (Math.abs(position - track.scrollLeft) < Math.abs(positions[best] - track.scrollLeft)) best = index
-    })
-    setActive(best)
-  }, [])
+    pickActive()
+  }, [pickActive])
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
     let frame = 0
-    const onChange = () => {
-      if (!frame) frame = requestAnimationFrame(() => ((frame = 0), measure()))
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(() => ((frame = 0), pickActive()))
     }
+    const observer = new ResizeObserver(() => measure())
+    observer.observe(track)
     measure()
-    track.addEventListener('scroll', onChange, { passive: true })
-    window.addEventListener('resize', onChange)
+    track.addEventListener('scroll', onScroll, { passive: true })
     return () => {
-      track.removeEventListener('scroll', onChange)
-      window.removeEventListener('resize', onChange)
+      observer.disconnect()
+      track.removeEventListener('scroll', onScroll)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [measure, items.length])
+  }, [measure, pickActive, items.length])
 
   // Mouse drag: the row follows the cursor (snapping paused), then on release
   // glides to the stop nearest where the flick would carry it. Touch and
@@ -321,6 +333,7 @@ function ReviewCard({ item }: { item: Testimonial }) {
               width={56}
               height={56}
               loading="lazy"
+              decoding="async"
               className="size-14 shape-squircle border-2 border-ink object-cover"
             />
           ) : (
