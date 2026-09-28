@@ -113,11 +113,12 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
 
       {/* --- The photographs, and the buy --- */}
       <section className="px-3 sm:px-4" aria-labelledby="pdp-title">
-        <div className="mx-auto grid max-w-[75rem] overflow-hidden rounded-xl border-2 border-ink lg:grid-cols-2">
+        {/* Photo beside the buy from tablet width up; stacked on phones. */}
+        <div className="mx-auto grid max-w-[75rem] overflow-hidden rounded-xl border-2 border-ink md:grid-cols-2">
           <PhotoGallery key={meta.key} meta={meta} />
 
           {/* The graph grid, as on every panel, ruled at under half strength so it never competes with the type. */}
-          <div className="kv-surface ground-paper flex flex-col justify-center border-t-2 border-ink px-6 py-10 [--grid-rule:rgb(27_25_24_/_0.05)] sm:px-10 sm:py-12 lg:border-t-0 lg:border-l-2 lg:px-14">
+          <div className="kv-surface ground-paper flex flex-col justify-center border-t-2 border-ink px-6 py-10 [--grid-rule:rgb(27_25_24_/_0.05)] sm:px-10 sm:py-12 md:border-t-0 md:border-l-2 md:px-8 lg:px-14">
             <p className="label">{meta.note}</p>
 
             <h1 id="pdp-title" className="mt-4 text-display">
@@ -351,13 +352,16 @@ function PhotoGallery({ meta }: { meta: FlavourMeta }) {
   const shots = { front: meta.image, back: meta.back } as const
 
   return (
-    <div className="relative aspect-[3/4] overflow-hidden bg-ink/10 lg:aspect-auto lg:min-h-[40rem]">
+    // Tall 3:4 on phones; on a wider single column the height is capped (the
+    // photo crops a little top and bottom) so it never towers over the page;
+    // beside the buy from tablet width, it fills its column.
+    <div className="relative aspect-[3/4] overflow-hidden bg-ink/10 sm:max-md:aspect-auto sm:max-md:h-[min(72svh,38rem)] md:aspect-auto md:min-h-[34rem] lg:min-h-[40rem]">
       {(['front', 'back'] as const).map((key) => (
         <img
           key={key}
           src={shots[key].src}
           srcSet={shots[key].srcSet}
-          sizes="(min-width: 1024px) 44rem, 100vw"
+          sizes="(min-width: 1024px) 44rem, (min-width: 768px) 50vw, 100vw"
           alt={shots[key].alt}
           width={shots[key].width}
           height={shots[key].height}
