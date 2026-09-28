@@ -15,7 +15,6 @@ export const site = {
   /** Set VITE_SITE_URL in production for canonical + Open Graph URLs. */
   url: (typeof env.VITE_SITE_URL === 'string' && env.VITE_SITE_URL.trim()) || 'https://kelvocoffee.in',
   city: 'Bengaluru',
-  email: (typeof env.VITE_CONTACT_EMAIL === 'string' && env.VITE_CONTACT_EMAIL.trim()) || 'hello@kelvocoffee.com',
 } as const
 
 /**
@@ -36,7 +35,6 @@ export const navLinks = [
   { label: 'Shop', href: '#shop' },
   { label: 'How to Kelvo', href: '#how-to-kelvo' },
   { label: 'FAQ', href: '#faq' },
-  { label: 'About', href: '/about' },
 ] as const
 
 /**
@@ -62,10 +60,8 @@ export const footerSections = [
   {
     title: 'Information',
     links: [
-      { label: 'About', href: '/about' },
       { label: 'How to Kelvo', href: '#how-to-kelvo' },
       { label: 'FAQ', href: '#faq' },
-      { label: 'Contact', href: `mailto:${site.email}` },
     ],
   },
   {

@@ -29,13 +29,11 @@ import { lazyPage } from './lazyPage'
 // browser is idle so the first page is lighter but later ones stay instant.
 const ProductPage = lazyPage(() => import('./pages/ProductPage').then((m) => m.ProductPage))
 const CartPage = lazyPage(() => import('./pages/CartPage').then((m) => m.CartPage))
-const AboutPage = lazyPage(() => import('./pages/AboutPage').then((m) => m.AboutPage))
 const PolicyPage = lazyPage(() => import('./pages/PolicyPage').then((m) => m.PolicyPage))
 
 function preloadPages() {
   void ProductPage.preload()
   void CartPage.preload()
-  void AboutPage.preload()
   void PolicyPage.preload()
 }
 
@@ -58,7 +56,6 @@ function Routes() {
   if (path === '/' || path === '') return <HomePage />
 
   if (path === '/cart') return <CartPage />
-  if (path === '/about') return <AboutPage />
 
   const productMatch = path.match(/^\/products\/([a-z0-9-]+)$/)
   if (productMatch) return <ProductRoute handle={productMatch[1]} />

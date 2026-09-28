@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { faqs, type FaqItem as Faq } from '@/config/faq'
-import { site } from '@/config/site'
+import { brand } from '@/config/brand'
 import { SectionHeading } from './ui/SectionHeading'
 import { Reveal } from './ui/Reveal'
 import { PlusIcon } from './ui/icons'
@@ -35,9 +35,9 @@ export function FaqSection({ items = faqs, id = 'faq' }: { items?: Faq[]; id?: s
         <div className="text-center">
           <SectionHeading id={`${id}-heading`} title="Questions." intro="The things people ask before their first pour." />
           <p className="mt-6 text-[1.05rem]">
-            Anything else?{' '}
-            <a href={`mailto:${site.email}`} className="link-underline font-bold">
-              Email us
+            Anything else? Call us on{' '}
+            <a href={`tel:${brand.customerCare.replace(/\s+/g, '')}`} className="link-underline tnum font-bold">
+              {brand.customerCare}
             </a>
             .
           </p>

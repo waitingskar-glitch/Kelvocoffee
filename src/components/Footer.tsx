@@ -1,15 +1,24 @@
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
-import { footerSections, site, socialLinks } from '@/config/site'
-import { brand } from '@/config/brand'
-import { flavours } from '@/config/catalog'
-import { productHandles, shopOrder } from '@/config/shopify'
-import { Link } from '@/router'
-import { useSectionNav } from '@/hooks/useSectionNav'
-import { WORDMARK_VIEWBOX, wordmarkLetters } from './wordmarkPaths'
-import { ArtLayer } from './ArtLayer'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from "react";
+import { footerSections, site, socialLinks } from "@/config/site";
+import { brand } from "@/config/brand";
+import { flavours } from "@/config/catalog";
+import { productHandles, shopOrder } from "@/config/shopify";
+import { Link } from "@/router";
+import { useSectionNav } from "@/hooks/useSectionNav";
+import { WORDMARK_VIEWBOX, wordmarkLetters } from "./wordmarkPaths";
+import { ArtLayer } from "./ArtLayer";
 
-const information = footerSections.find((section) => section.title === 'Information')?.links ?? []
-const legal = footerSections.find((section) => section.title === 'Legal')?.links ?? []
+const information =
+  footerSections.find((section) => section.title === "Information")?.links ??
+  [];
+const legal =
+  footerSections.find((section) => section.title === "Legal")?.links ?? [];
 
 /**
  * The footer, in black and white only: Ink ground, Paper type. The line and
@@ -19,24 +28,31 @@ const legal = footerSections.find((section) => section.title === 'Legal')?.links
  * legal bar (which carries every policy, so they aren't repeated above).
  */
 export function Footer() {
-  const scrollToSection = useSectionNav()
+  const scrollToSection = useSectionNav();
 
   // In-page links (#faq and the like) scroll smoothly instead of jumping.
   const onLinkClick = (href: string) => (event: MouseEvent) => {
-    if (!href.startsWith('#')) return
-    event.preventDefault()
-    scrollToSection(href)
-  }
+    if (!href.startsWith("#")) return;
+    event.preventDefault();
+    scrollToSection(href);
+  };
 
   return (
     <footer className="kv-grain ground-ink relative overflow-hidden pt-20 sm:pt-28">
       <div className="container-page text-center">
-        <p className="mx-auto max-w-[16ch] font-display text-[2.3rem] leading-[0.95] sm:text-[3.4rem]">{brand.oneLine}</p>
+        <p className="mx-auto max-w-[16ch] font-display text-[2.3rem] leading-[0.95] sm:text-[3.4rem]">
+          {brand.oneLine}
+        </p>
 
         {/* Say hi: customer care. */}
-        <p className="mt-5 text-[1rem] text-paper/70 sm:mt-6 sm:text-[1.1rem]">Questions or feedback? Say hi.</p>
+        <p className="mt-5 text-[1rem] text-paper/70 sm:mt-6 sm:text-[1.1rem]">
+          Questions or feedback? Say hi.
+        </p>
         <p className="mt-2 text-[1.05rem] font-semibold sm:text-[1.15rem]">
-          <a href={`tel:${brand.customerCare.replace(/\s+/g, '')}`} className="link-underline tnum">
+          <a
+            href={`tel:${brand.customerCare.replace(/\s+/g, "")}`}
+            className="link-underline tnum"
+          >
             {brand.customerCare}
           </a>
         </p>
@@ -47,7 +63,10 @@ export function Footer() {
         <nav aria-label="Shop" className="mt-10 sm:mt-14">
           <ul className="mx-auto grid max-w-[22rem] grid-cols-3 gap-x-4 gap-y-4 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-x-12">
             {[
-              ...shopOrder.map((key) => ({ label: flavours[key].name, href: `/products/${productHandles[key]}` })),
+              ...shopOrder.map((key) => ({
+                label: flavours[key].name,
+                href: `/products/${productHandles[key]}`,
+              })),
             ].map((item) => (
               <li key={item.label}>
                 <Link
@@ -64,19 +83,17 @@ export function Footer() {
         {/* Around the site, and any socials: quieter, underneath. */}
         <nav aria-label="Information" className="mt-8 sm:mt-10">
           <ul className="flex flex-wrap justify-center gap-x-7 gap-y-2 sm:gap-x-10">
-            {information
-              .filter((link) => !link.href.startsWith('mailto:'))
-              .map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    onClick={onLinkClick(link.href)}
-                    className="text-[1rem] font-medium text-paper/80 underline decoration-paper/35 decoration-1 underline-offset-4 transition-colors hover:text-paper hover:decoration-paper sm:text-[1.05rem]"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            {information.map((link) => (
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  onClick={onLinkClick(link.href)}
+                  className="text-[1rem] font-medium text-paper/80 underline decoration-paper/35 decoration-1 underline-offset-4 transition-colors hover:text-paper hover:decoration-paper sm:text-[1.05rem]"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
             {socialLinks.map((link) => (
               <li key={link.label}>
                 <a
@@ -108,7 +125,10 @@ export function Footer() {
             <ul className="flex flex-wrap justify-center gap-x-6 gap-y-1">
               {legal.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="hover:underline hover:underline-offset-4">
+                  <Link
+                    href={link.href}
+                    className="hover:underline hover:underline-offset-4"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -121,7 +141,7 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 /**
@@ -132,19 +152,21 @@ export function Footer() {
  * with reduced motion it simply sits there.
  */
 function HoppingWordmark({ className }: { className?: string }) {
-  const ref = useRef<HTMLDivElement | null>(null)
-  const [live, setLive] = useState(false)
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [live, setLive] = useState(false);
 
   useEffect(() => {
-    const element = ref.current
-    if (!element || !('IntersectionObserver' in window)) {
-      setLive(true)
-      return
+    const element = ref.current;
+    if (!element || !("IntersectionObserver" in window)) {
+      setLive(true);
+      return;
     }
-    const observer = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting))
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
+    const observer = new IntersectionObserver(([entry]) =>
+      setLive(entry.isIntersecting),
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
@@ -152,8 +174,10 @@ function HoppingWordmark({ className }: { className?: string }) {
       role="img"
       aria-label="Kelvo"
       data-live={live}
-      className={`kv-logo-hop ${className ?? ''}`}
-      style={{ aspectRatio: `${WORDMARK_VIEWBOX.width} / ${WORDMARK_VIEWBOX.height}` }}
+      className={`kv-logo-hop ${className ?? ""}`}
+      style={{
+        aspectRatio: `${WORDMARK_VIEWBOX.width} / ${WORDMARK_VIEWBOX.height}`,
+      }}
     >
       {wordmarkLetters.map((letter, index) => (
         <ArtLayer
@@ -161,11 +185,11 @@ function HoppingWordmark({ className }: { className?: string }) {
           view={WORDMARK_VIEWBOX}
           origin="bottom"
           className="kv-letter"
-          style={{ '--i': index } as CSSProperties}
+          style={{ "--i": index } as CSSProperties}
         >
           <path d={letter.d} fill="var(--color-paper)" />
         </ArtLayer>
       ))}
     </div>
-  )
+  );
 }

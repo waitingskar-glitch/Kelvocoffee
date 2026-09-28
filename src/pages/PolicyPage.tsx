@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { Policy } from '@/config/policies'
 import { policies } from '@/config/policies'
 import { site } from '@/config/site'
+import { brand } from '@/config/brand'
 import { Link } from '@/router'
 import { ArrowRightIcon } from '@/components/ui/icons'
 
@@ -34,9 +35,9 @@ export function PolicyPage({ policy }: { policy: Policy }) {
               <p className="text-[1rem] font-bold">This policy is not final yet.</p>
               <p className="mt-1.5 text-[0.95rem] leading-relaxed">
                 It is published as a working draft while we complete it. For anything that affects your
-                order right now, email{' '}
-                <a href={`mailto:${site.email}`} className="link-underline font-semibold">
-                  {site.email}
+                order right now, call us on{' '}
+                <a href={`tel:${brand.customerCare.replace(/\s+/g, '')}`} className="link-underline tnum font-semibold">
+                  {brand.customerCare}
                 </a>{' '}
                 and we will answer directly.
               </p>

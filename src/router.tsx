@@ -46,12 +46,24 @@ function withPageTransition(update: () => void): Promise<void> {
 
 const RouterContext = createContext<RouterValue | null>(null)
 
+/** Pages that no longer exist, and where old links to them now land (the host redirects these too). */
+const RETIRED: Record<string, string> = { '/about': '/' }
+
+/** The path to show for a URL, swapping a retired page's address for its replacement. */
+function resolve(pathname: string): string {
+  const path = normalise(pathname)
+  const target = RETIRED[path]
+  if (!target) return path
+  window.history.replaceState(window.history.state, '', target + window.location.search + window.location.hash)
+  return target
+}
+
 export function RouterProvider({ children }: { children: ReactNode }) {
-  const [path, setPath] = useState(() => normalise(window.location.pathname))
+  const [path, setPath] = useState(() => resolve(window.location.pathname))
 
   useEffect(() => {
     const onPopState = () => {
-      void withPageTransition(() => setPath(normalise(window.location.pathname)))
+      void withPageTransition(() => setPath(resolve(window.location.pathname)))
     }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)

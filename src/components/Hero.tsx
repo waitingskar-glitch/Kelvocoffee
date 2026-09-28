@@ -177,7 +177,11 @@ function DeliveryRoller() {
     >
       {/* The line fades in and out at the strip's ends; the strip itself stays solid. */}
       <div className="flex h-full w-full items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent_1rem,black_4rem,black_calc(100%-4rem),transparent_calc(100%-1rem))]">
-        <div className="animate-marquee flex w-max font-display text-[1.05rem] leading-none tracking-[0.02em] uppercase [animation-duration:60s] sm:text-[1.2rem]">
+        <div
+          className="animate-marquee flex w-max font-display text-[1.05rem] leading-none tracking-[0.02em] uppercase sm:text-[1.2rem]"
+          // Inline, so it beats .animate-marquee's default 38s (a utility class loses to it).
+          style={{ animationDuration: '21.7s' }}
+        >
           {half(0)}
           {half(1)}
         </div>

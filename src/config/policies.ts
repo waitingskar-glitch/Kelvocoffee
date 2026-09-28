@@ -1,4 +1,5 @@
 import { site } from './site'
+import { brand } from './brand'
 
 /**
  * Legal pages.
@@ -38,7 +39,7 @@ export interface Policy {
 const CONTACT: PolicySection = {
   heading: 'Contact us',
   body: [
-    `Questions about this policy can go to ${site.email}, and we aim to reply within two working days.`,
+    `Questions about this policy can go to us on ${brand.customerCare}, and we aim to reply within two working days.`,
     'TO CONFIRM: add your registered business name, full postal address and a contact phone number. Indian e-commerce rules require these to be clearly published.',
   ],
 }
@@ -85,7 +86,7 @@ export const policies: Policy[] = [
         heading: 'Your rights',
         body: [
           'You can ask us for a copy of the personal data we hold about you, ask us to correct it, or ask us to delete it.',
-          `Write to ${site.email} and we will respond within the period required by law.`,
+          `Call us on ${brand.customerCare} and we will respond within the period required by law.`,
           'TO CONFIRM: India’s Digital Personal Data Protection Act sets specific obligations, including naming a contact for grievances. Confirm your obligations before publishing.',
         ],
       },
@@ -194,7 +195,7 @@ export const policies: Policy[] = [
         heading: 'Cancelling an order',
         body: [
           'TO CONFIRM: state how long a customer has to cancel before an order is dispatched.',
-          `Email ${site.email} with your order number and we will process it.`,
+          `Call us on ${brand.customerCare} with your order number and we will process it.`,
         ],
       },
       {
@@ -213,7 +214,7 @@ export const policies: Policy[] = [
       {
         heading: 'How to request a refund',
         body: [
-          `Email ${site.email} with your order number and what went wrong.`,
+          `Call us on ${brand.customerCare} with your order number and tell us what went wrong.`,
           'TO CONFIRM: state who pays return postage where a return is required.',
         ],
       },
