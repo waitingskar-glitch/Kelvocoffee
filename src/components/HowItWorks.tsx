@@ -1,12 +1,26 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { Scope } from 'animejs'
+import type { Scope, Timeline } from 'animejs'
 import { brand } from '@/config/brand'
 import { PourSequence } from './PourSequence'
 import { cn } from '@/lib/cn'
+import { smoothScrollTo } from '@/lib/smoothScroll'
 
 /** Timeline positions (ms) where each step takes over while scrubbing. */
 const STEP_AT = [0, 1500, 2650] as const
 const TOTAL = 3900
+/** Where each step's part of the drawing is complete: tapping a step plays the drawing to here. */
+const STEP_DONE = [1450, 2600, 3850] as const
+
+const headerHeight = () =>
+  parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--spacing-header')) || 0
+
+/** Scroll positions where the scrubbed timeline starts and ends (as the onScroll bounds below). */
+function scrubRange(runway: HTMLElement, panel: HTMLElement) {
+  const header = headerHeight()
+  const top = runway.getBoundingClientRect().top + window.scrollY
+  const overflow = Math.max(0, panel.getBoundingClientRect().height - (window.innerHeight - header))
+  return { start: top - header, end: top + runway.offsetHeight - (window.innerHeight + overflow) }
+}
 
 /**
  * SECTION 6 — How to Kelvo.
@@ -26,14 +40,29 @@ export function HowItWorks() {
   const [reducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   // null = no step singled out: before the sequence runs, and once it's done.
   const [activeStep, setActiveStep] = useState<number | null>(null)
+  const timelineRef = useRef<Timeline | null>(null)
+
+  // Tapping a step plays the drawing to that step: the page glides to the
+  // scroll point where it is complete, so the scrubbed timeline runs there
+  // (forwards or back) and stays in step with the scroll. With reduced motion
+  // there's no scrub: the drawing jumps to the step instead.
+  const goToStep = (index: number) => {
+    const runway = runwayRef.current
+    const panel = stageRef.current
+    if (!runway || !panel) return
+    if (reducedMotion) {
+      timelineRef.current?.seek(STEP_DONE[index])
+      setActiveStep(index)
+      return
+    }
+    const { start, end } = scrubRange(runway, panel)
+    void smoothScrollTo(start + (end - start) * (STEP_DONE[index] / TOTAL))
+  }
 
   useLayoutEffect(() => {
     const runway = runwayRef.current
     const panel = stageRef.current
     if (!runway || !panel) return
-
-    const headerHeight = () =>
-      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--spacing-header')) || 0
 
     let lastStep: number | null = null
     let scope: Scope | null = null
@@ -153,12 +182,14 @@ export function HowItWorks() {
           .add(swirl, { draw: ['0 1', '1 1'], duration: 300, ease: 'inQuad' }, 3250)
           .add('.kv-cup-layer', { translateY: [0, -10, 0], rotate: [0, -4, 0], duration: 700, ease: 'inOutSine' }, 3200)
 
+        timelineRef.current = tl
         if (reducedMotion) tl.seek(tl.duration)
       })
     })
 
     return () => {
       cancelled = true
+      timelineRef.current = null
       scope?.revert()
     }
   }, [reducedMotion])
@@ -208,8 +239,9 @@ export function HowItWorks() {
                           // The steps stack one under another at every size, the number beside
                           // the name and copy; below lg they're compact, so the drawing above
                           // gets about 60% of the panel and the steps about 40%.
-                          'grid grid-cols-[auto_1fr] items-center gap-x-3 rounded-md border-2 px-3 py-1.5 text-left max-sm:[@media(max-height:720px)]:py-1 transition-[background-color,border-color] duration-300 [grid-template-areas:"num_title"_"num_copy"] sm:gap-x-4 sm:px-4 sm:py-2.5 lg:gap-x-5 lg:py-4',
-                          active ? 'kv-grain ground-paper border-ink' : 'border-transparent',
+                          'relative grid grid-cols-[auto_1fr] items-center gap-x-3 rounded-md border-2 px-3 py-1.5 text-left max-sm:[@media(max-height:720px)]:py-1 transition-[background-color,border-color] duration-300 [grid-template-areas:"num_title"_"num_copy"] sm:gap-x-4 sm:px-4 sm:py-2.5 lg:gap-x-5 lg:py-4',
+                          // Each step is tappable (the button over it): a faint outline on hover says so.
+                          active ? 'kv-grain ground-paper border-ink' : 'border-transparent has-[button:hover]:border-ink/25',
                         )}
                       >
                         <div className="contents">
@@ -230,6 +262,14 @@ export function HowItWorks() {
                         <p className="mt-0.5 self-start text-[0.85rem] leading-snug font-medium [grid-area:copy] sm:mt-1 sm:text-[0.98rem] lg:mt-1.5 lg:text-[1.02rem]">
                           {item.copy}
                         </p>
+                        {/* Over the whole row, so the step keeps its heading. */}
+                        <button
+                          type="button"
+                          onClick={() => goToStep(index)}
+                          aria-current={active ? 'step' : undefined}
+                          aria-label={`Show step ${index + 1}: ${item.step}. ${item.copy}`}
+                          className="absolute -inset-0.5 z-10 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                        />
                       </li>
                     )
                   })}
