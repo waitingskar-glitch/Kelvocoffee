@@ -301,7 +301,7 @@ export function CartPage() {
                   </Button>
                   <p className="mt-3 text-center text-[0.85rem] text-ink/60">
                     {canCheckout
-                      ? 'Secure checkout by Shopify. Delivery outside India is added there.'
+                      ? 'Secure checkout by Shopify.'
                       : 'Checkout opens once the store is connected.'}
                   </p>
                 </div>
