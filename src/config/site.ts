@@ -35,6 +35,8 @@ export const navLinks = [
   { label: 'Shop', href: '#shop' },
   { label: 'How to Kelvo', href: '#how-to-kelvo' },
   { label: 'FAQ', href: '#faq' },
+  // The story section on the landing page ("We're not coffee nerds.").
+  { label: 'About', href: '#story' },
 ] as const
 
 /**

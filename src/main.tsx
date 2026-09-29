@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { Analytics } from '@vercel/analytics/react'
 import App from './App'
 import { installEvenGrid } from './lib/evenGrid'
+import { installMetaPixel } from './lib/metaPixel'
 import './styles/index.css'
 
 const container = document.getElementById('root')
@@ -20,6 +21,9 @@ createRoot(container).render(
 
 // Fit the graph grid to whole squares on every gridded panel.
 installEvenGrid()
+
+// Meta Pixel for ad measurement (live domain only; see lib/metaPixel).
+installMetaPixel()
 
 // Images can't be dragged off the page. CSS covers Chrome and Safari
 // (-webkit-user-drag in index.css); this covers Firefox too.

@@ -18,6 +18,7 @@ import { AddToCartButton } from '@/components/AddToCartButton'
 import { ProductVariantSelector, variantDetail } from '@/components/ProductVariantSelector'
 import { NotifyMeModal, type NotifyTarget } from '@/components/NotifyMeModal'
 import { ArrowRightIcon } from '@/components/ui/icons'
+import { trackViewContent } from '@/lib/metaPixel'
 
 /** Line drawings for Pour, Mix and Enjoy, in ritual order. */
 const RITUAL_ART = ['pour', 'mix', 'enjoy'] as const
@@ -40,9 +41,11 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
   const displayName = meta.name
   const schemaImage = `${site.url}${meta.image.src}`
 
-  // Reset the size choice when routing straight from one product to another.
+  // Reset the size choice when routing straight from one product to another,
+  // and tell Meta which product is being looked at.
   useEffect(() => {
     setSelectedId(defaultVariant(product)?.id ?? '')
+    trackViewContent(product, defaultVariant(product))
   }, [product])
 
   useEffect(() => {

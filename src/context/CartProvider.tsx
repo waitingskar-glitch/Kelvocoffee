@@ -3,6 +3,7 @@ import { createCartService } from '@/services/cart'
 import { useCatalog } from './catalogContext'
 import { CommerceError, type Cart } from '@/types/shopify'
 import { CartContext, type CartState } from './cartContext'
+import { trackAddToCart } from '@/lib/metaPixel'
 
 const CONFIRMATION_MS = 1800
 
@@ -87,6 +88,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setCart(next)
 
         const line = next.lines.find((l) => l.merchandiseId === merchandiseId)
+        if (line) trackAddToCart(line, quantity)
         setAnnouncement(
           line
             ? `${line.productTitle}, ${line.variantTitle}, added to cart. ${next.totalQuantity} item${next.totalQuantity === 1 ? '' : 's'} in cart.`

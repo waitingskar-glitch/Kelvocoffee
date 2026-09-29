@@ -65,7 +65,7 @@ export const policies: Policy[] = [
         body: [
           'To process and deliver your order, to contact you about that order, and to answer your questions.',
           'To send marketing email only where you have opted in. Every marketing email carries an unsubscribe link.',
-          'TO CONFIRM: list any analytics or advertising tools you use and what they collect. This site currently uses cookieless visitor analytics that does not identify individuals.',
+          'TO CONFIRM: list any analytics or advertising tools you use and what they collect. This site uses cookieless visitor analytics that does not identify individuals, and the Meta Pixel, which sets a cookie and shares the pages you visit and the products you view or add to your cart with Meta (Facebook, Instagram) so we can measure and show our ads.',
         ],
       },
       {

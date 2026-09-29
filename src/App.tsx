@@ -21,6 +21,7 @@ import { findPolicy } from './config/policies'
 import { findProductByHandle } from './services/products'
 import { useCatalog } from './context/catalogContext'
 import { RouterProvider, useRouter } from './router'
+import { trackPageView } from './lib/metaPixel'
 import { NotFoundPage } from './pages/NotFoundPage'
 import type { Product, ProductVariant } from './types/shopify'
 import { lazyPage } from './lazyPage'
@@ -97,6 +98,9 @@ function Storefront() {
   const { announcement } = useCart()
   const { path } = useRouter()
   const isHome = path === '/' || path === ''
+
+  // A page view for Meta on every route change (the first is sent as the pixel loads).
+  useEffect(() => trackPageView(path), [path])
 
   // Fetch the other pages once the browser has nothing better to do.
   useEffect(() => {
