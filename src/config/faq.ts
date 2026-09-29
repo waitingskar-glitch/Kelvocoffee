@@ -1,5 +1,6 @@
 import { brand } from './brand'
 import type { FlavourKey } from './shopify'
+import { FREE_DELIVERY_FROM } from './delivery'
 
 /**
  * Frequently asked questions, in brand voice.
@@ -47,7 +48,8 @@ export const faqs: FaqItem[] = [
   },
   {
     question: 'What does delivery cost?',
-    answer: 'Nothing. Delivery is free anywhere in India.',
+    answer:
+      `Nothing on orders of ₹${FREE_DELIVERY_FROM} and above, anywhere in India. Below that, a small delivery charge is added at checkout, and you see the exact amount before you pay.`,
   },
   {
     question: 'Do you deliver outside India?',

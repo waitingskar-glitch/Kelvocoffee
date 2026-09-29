@@ -8,6 +8,10 @@ import { cn } from '@/lib/cn'
 import type { ProductVariant } from '@/types/shopify'
 import { Button } from './ui/Button'
 import { Spinner } from './ui/Spinner'
+import { CloseIcon } from './ui/icons'
+import { Link } from '@/router'
+import { MAX_HAMPERS_PER_ORDER, customerCareHref, hamperCount, isHamperLine } from '@/config/hampers'
+import { brand } from '@/config/brand'
 
 type HamperSize = 'duo' | 'four'
 type PackMl = 50 | 100
@@ -44,13 +48,17 @@ function describe(picks: FlavourKey[]): string {
  * Each hamper is one Shopify product at a fixed price whatever goes in, with a
  * 50 ml and a 100 ml variant (handles in config/shopify.ts). The flavours go
  * into the cart as a note on the line ("Flavours: Caramel ×2, Hazelnut"),
- * which shows on the order for packing. Until the products exist in Shopify
+ * which shows on the order for packing. Several hampers can go in one order,
+ * each built its own way (a hamper added resets the builder for the next, and
+ * the ones already in the cart are listed underneath), up to
+ * MAX_HAMPERS_PER_ORDER; past that the builder stops and points to a call.
+ * The cart enforces the same limit. Until the products exist in Shopify
  * the section stays off the live site; the dev server shows it for review,
  * without a price.
  */
 export function HamperBuilder() {
   const { catalog } = useCatalog()
-  const { addItem, pendingVariantIds, confirmedVariantIds } = useCart()
+  const { cart, addItem, removeLine, pendingVariantIds, confirmedVariantIds, pendingLineIds } = useCart()
   const [size, setSize] = useState<HamperSize>('duo')
   const [ml, setMl] = useState<PackMl>(50)
   const [picks, setPicks] = useState<FlavourKey[]>([])
@@ -65,6 +73,12 @@ export function HamperBuilder() {
   // The note that goes on the cart line: "Caramel ×2, Hazelnut".
   const summary = useMemo(() => describe(picks), [picks])
 
+  // The hampers already built (in the cart), and whether there's room for another.
+  // Shopify lists the newest line first; show them in the order they were built.
+  const built = (cart?.lines.filter(isHamperLine) ?? []).reverse()
+  const hampersBuilt = hamperCount(cart)
+  const atLimit = hampersBuilt >= MAX_HAMPERS_PER_ORDER
+
   const live = Boolean(catalog?.hampers.duo || catalog?.hampers.four)
   if (!live && !import.meta.env.DEV) return null
 
@@ -77,8 +91,10 @@ export function HamperBuilder() {
   const removeAt = (index: number) => setPicks((current) => [...current.slice(0, index), ...current.slice(index + 1)])
 
   const addToCart = async () => {
-    if (!variant || !full) return
-    await addItem(variant.id, 1, [{ key: 'Flavours', value: summary }])
+    if (!variant || !full || atLimit) return
+    const added = await addItem(variant.id, 1, [{ key: 'Flavours', value: summary }])
+    // Clear the box for the next one; size and pack size stay as they were.
+    if (added) setPicks([])
   }
 
   const remaining = capacity - picks.length
@@ -94,7 +110,7 @@ export function HamperBuilder() {
               Build a hamper.
             </h2>
             <p className="mx-auto mt-4 max-w-[30ch] text-[1.05rem] leading-relaxed sm:text-[1.1rem]">
-              Two packs or four. Any flavours, repeats welcome.
+              Two packs or four. Any flavours, repeats welcome. Build up to {MAX_HAMPERS_PER_ORDER}, each its own way.
             </p>
             {/* The pricing, said plainly. */}
             <p className="mx-auto mt-5 max-w-[26rem] shape-squircle bg-ink px-5 py-3 text-[0.95rem] leading-snug text-paper">
@@ -137,8 +153,16 @@ export function HamperBuilder() {
           <div>
             <div className="flex items-center justify-between gap-3">
               <StepLabel step={3}>Pick {capacity} flavours</StepLabel>
-              <span className="tnum label shrink-0 shape-squircle border-2 border-ink px-3 py-1">
-                {picks.length} / {capacity}
+              <span className="flex shrink-0 items-center gap-2">
+                {/* Which hamper this is, once there's at least one in the cart. */}
+                {hampersBuilt > 0 && !atLimit && (
+                  <span className="tnum label hidden shape-squircle bg-ink px-3 py-1 text-paper sm:inline">
+                    Hamper {hampersBuilt + 1}
+                  </span>
+                )}
+                <span className="tnum label shape-squircle border-2 border-ink px-3 py-1">
+                  {picks.length} / {capacity}
+                </span>
               </span>
             </div>
 
@@ -152,11 +176,11 @@ export function HamperBuilder() {
                     <button
                       type="button"
                       onClick={() => addPick(key)}
-                      disabled={full}
+                      disabled={full || atLimit}
                       aria-label={`Add ${meta.name}${count ? ` (${count} in)` : ''}`}
                       className={cn(
                         'group relative flex w-full flex-col overflow-hidden shape-squircle border-2 border-ink bg-paper transition-[transform,opacity] duration-200 enabled:hover:-translate-y-1 disabled:cursor-not-allowed',
-                        full && count === 0 && 'opacity-40',
+                        ((full && count === 0) || atLimit) && 'opacity-40',
                       )}
                     >
                       {/* The flavour's ground with a fine, faint grid (a smaller square than the panels'). */}
@@ -256,7 +280,7 @@ export function HamperBuilder() {
             </div>
             <Button
               size="lg"
-              disabled={!full || !purchasable || pending}
+              disabled={!full || !purchasable || pending || atLimit}
               onClick={addToCart}
               className="sm:min-w-[15rem]"
             >
@@ -266,17 +290,86 @@ export function HamperBuilder() {
                 </>
               ) : confirmed ? (
                 'Added to cart ✓'
+              ) : atLimit ? (
+                `${MAX_HAMPERS_PER_ORDER} hampers is the most`
               ) : !product ? (
                 'Coming soon'
               ) : !purchasable ? (
                 'Sold out'
               ) : full ? (
-                'Add hamper to cart'
+                hampersBuilt > 0 ? `Add hamper ${hampersBuilt + 1} to cart` : 'Add hamper to cart'
               ) : (
                 `Pick ${remaining} more`
               )}
             </Button>
           </div>
+
+          {/* At the limit: bigger orders are handled by hand. */}
+          {atLimit && (
+            <div role="status" className="kv-grain ground-vanilla shape-squircle border-2 border-ink px-4 py-3.5 sm:px-5">
+              <p className="font-display text-[1.15rem] leading-none">That&rsquo;s {MAX_HAMPERS_PER_ORDER} hampers.</p>
+              <p className="mt-2 text-[0.95rem] leading-snug">
+                The most one order can hold. Gifting a crowd, or need more? Call us on{' '}
+                <a href={customerCareHref} className="link-underline tnum font-semibold">
+                  {brand.customerCare}
+                </a>{' '}
+                and we&rsquo;ll put a bigger order together.
+              </p>
+            </div>
+          )}
+
+          {/* The hampers built so far, each as it went into the cart. */}
+          {built.length > 0 && (
+            <div>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="label">
+                  Your hampers · <span className="tnum">{hampersBuilt} of {MAX_HAMPERS_PER_ORDER}</span>
+                </p>
+                <Link href="/cart" className="label underline underline-offset-4">
+                  Go to cart
+                </Link>
+              </div>
+              <ul className="mt-3 flex flex-col gap-2">
+                {built.map((line, index) => {
+                  const flavourNote = line.attributes.find((attribute) => attribute.key === 'Flavours')?.value
+                  const kind = line.productHandle === productHandles.fourHamper ? 'Four' : 'Duo'
+                  const busy = pendingLineIds.has(line.id)
+                  return (
+                    <li
+                      key={line.id}
+                      className={cn(
+                        'kv-hamper-pop flex items-center gap-3 shape-squircle border-2 border-ink bg-paper py-2 pr-2 pl-3 transition-opacity',
+                        busy && 'opacity-50',
+                      )}
+                    >
+                      <span className="tnum grid size-7 shrink-0 place-items-center rounded-full bg-ink font-display text-[0.85rem] leading-none text-paper">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-display text-[1rem] leading-none">
+                          {kind} · {line.variantTitle.replace(/\s*packs?$/i, '')}
+                          {line.quantity > 1 && <span className="tnum"> × {line.quantity}</span>}
+                        </span>
+                        {flavourNote && (
+                          <span className="mt-1 block truncate text-[0.85rem] leading-snug text-ink/70">{flavourNote}</span>
+                        )}
+                      </span>
+                      <span className="tnum shrink-0 font-semibold">{formatMoney(line.lineTotal)}</span>
+                      <button
+                        type="button"
+                        onClick={() => void removeLine(line.id)}
+                        disabled={busy}
+                        aria-label={`Remove hamper ${index + 1} (${kind}, ${flavourNote ?? line.variantTitle})`}
+                        className="grid size-9 shrink-0 place-items-center shape-squircle transition-colors hover:bg-ink/[0.08] disabled:cursor-not-allowed"
+                      >
+                        <CloseIcon className="size-4" />
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </section>

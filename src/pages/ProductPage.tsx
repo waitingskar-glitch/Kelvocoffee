@@ -19,6 +19,7 @@ import { ProductVariantSelector, variantDetail } from '@/components/ProductVaria
 import { NotifyMeModal, type NotifyTarget } from '@/components/NotifyMeModal'
 import { ArrowRightIcon } from '@/components/ui/icons'
 import { trackViewContent } from '@/lib/metaPixel'
+import { FREE_DELIVERY_FROM } from '@/config/delivery'
 
 /** Line drawings for Pour, Mix and Enjoy, in ritual order. */
 const RITUAL_ART = ['pour', 'mix', 'enjoy'] as const
@@ -159,7 +160,7 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
               </div>
 
               <ul className="mt-2 flex flex-wrap gap-2">
-                {[brand.cupRatio, 'Hot or cold', 'Free delivery in India'].map((fact) => (
+                {[brand.cupRatio, 'Hot or cold', `Free delivery from ₹${FREE_DELIVERY_FROM}`].map((fact) => (
                   <li key={fact} className="label rounded-pill border-2 border-ink px-3 py-1.5">
                     {fact}
                   </li>

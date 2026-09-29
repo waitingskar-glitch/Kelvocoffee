@@ -2,14 +2,15 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { claimArt, type ClaimArtName } from './claimArtPaths'
 import { claimArtWashes } from './claimArtWashes'
 import { ArtLayer } from './ArtLayer'
+import { FREE_DELIVERY_FROM } from '@/config/delivery'
 
 /** Five plain facts, each true to the pack, each with its own hand-drawn art. */
-const claims: Array<{ label: string; key: string; art: ClaimArtName; note?: boolean }> = [
+const claims: Array<{ label: string; key: string; art: ClaimArtName }> = [
   { key: 'cup', label: '10 ml. One cup.', art: 'one-cup' },
   { key: 'temp', label: 'Hot or cold.', art: 'hot-cold' },
   { key: 'machine', label: 'No machine.', art: 'no-machine' },
   { key: 'flavours', label: 'Five flavours.', art: 'five-flavours' },
-  { key: 'delivery', label: 'Free delivery.', art: 'delivery', note: true },
+  { key: 'delivery', label: `Free delivery from ₹${FREE_DELIVERY_FROM}.`, art: 'delivery' },
 ]
 
 /**
@@ -135,12 +136,6 @@ export function ClaimsStrip() {
               </div>
               <span className="font-display text-[1.24rem] leading-[1.05]">
                 {claim.label}
-                {/* Points to the footnote under the row. */}
-                {claim.note && (
-                  <sup aria-hidden="true" className="ml-0.5 text-[0.8em]">
-                    *
-                  </sup>
-                )}
               </span>
             </div>
           </li>

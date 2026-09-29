@@ -4,6 +4,9 @@ import { useCatalog } from '@/context/catalogContext'
 import { site } from '@/config/site'
 import { flavours, metaForHandle } from '@/config/catalog'
 import { shopOrder } from '@/config/shopify'
+import { FREE_DELIVERY_FROM } from '@/config/delivery'
+import { MAX_HAMPERS_PER_ORDER, customerCareHref, hamperCount, isHamperLine } from '@/config/hampers'
+import { brand } from '@/config/brand'
 import { formatMoney } from '@/lib/format'
 import { shopifyImage, shopifySrcSet } from '@/lib/image'
 import { cn } from '@/lib/cn'
@@ -11,7 +14,7 @@ import { useSectionNav } from '@/hooks/useSectionNav'
 import { QuantitySelector } from '@/components/QuantitySelector'
 import { shortVariantLabel, variantDetail } from '@/components/ProductVariantSelector'
 import { Button } from '@/components/ui/Button'
-import { ArrowRightIcon, CloseIcon, DripIcon } from '@/components/ui/icons'
+import { ArrowRightIcon, CheckIcon, CloseIcon, DripIcon } from '@/components/ui/icons'
 import { Link } from '@/router'
 import type { CartLine } from '@/types/shopify'
 
@@ -29,6 +32,17 @@ export function CartPage() {
   const isEmpty = isHydrated && lines.length === 0
   const itemCount = cart?.totalQuantity ?? 0
   const hampersLive = Boolean(catalog?.hampers.duo || catalog?.hampers.four)
+  // Hampers cap at MAX_HAMPERS_PER_ORDER per order: how many more fit.
+  const hamperRoom = Math.max(0, MAX_HAMPERS_PER_ORDER - hamperCount(cart))
+
+  // Free delivery in India at or above the threshold; below it, what's left to go.
+  const subtotal = cart?.subtotal.amount ?? 0
+  const currencyCode = cart?.subtotal.currencyCode ?? 'INR'
+  const delivery = {
+    free: subtotal >= FREE_DELIVERY_FROM,
+    shortfall: { amount: Math.max(0, FREE_DELIVERY_FROM - subtotal), currencyCode },
+    progress: Math.min(100, (subtotal / FREE_DELIVERY_FROM) * 100),
+  }
 
   useEffect(() => {
     document.title = `Your cart | ${site.legalName}`
@@ -178,12 +192,25 @@ export function CartPage() {
                     <CartLineRow
                       key={line.id}
                       line={line}
+                      max={isHamperLine(line) ? line.quantity + hamperRoom : undefined}
                       busy={pendingLineIds.has(line.id)}
                       onUpdate={updateLine}
                       onRemove={removeLine}
                     />
                   ))}
                 </ul>
+              )}
+
+              {/* At the hamper limit: bigger orders are handled by hand. */}
+              {hampersLive && hamperRoom === 0 && (
+                <p role="status" className="kv-grain ground-vanilla mt-3 shape-squircle border-2 border-ink px-4 py-3.5 text-[0.95rem] leading-snug sm:px-5">
+                  <strong className="font-display text-[1.05rem] font-normal">{MAX_HAMPERS_PER_ORDER} hampers</strong> is the
+                  most one order can hold. Need more? Call us on{' '}
+                  <a href={customerCareHref} className="link-underline tnum font-semibold">
+                    {brand.customerCare}
+                  </a>{' '}
+                  and we&rsquo;ll put it together.
+                </p>
               )}
 
               {lines.length > 0 && (
@@ -216,13 +243,48 @@ export function CartPage() {
                     </div>
                     <div className="flex items-baseline justify-between gap-4">
                       <dt className="text-ink/70">Delivery in India</dt>
-                      <dd className="font-semibold">Free</dd>
+                      <dd className="font-semibold">{delivery.free ? 'Free' : 'Added at checkout'}</dd>
                     </div>
                   </dl>
 
-                  <div className="mt-5 flex items-baseline justify-between gap-4 border-t-2 border-ink pt-5">
+                  {/* How far from free delivery: a nudge and a bar below the threshold, a tick once past it. */}
+                  <div role="status" className="mt-5">
+                    {delivery.free ? (
+                      <p className="flex items-center gap-2.5 text-[0.95rem] font-semibold">
+                        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-ink text-paper">
+                          <CheckIcon className="size-3.5" />
+                        </span>
+                        You&rsquo;ve got free delivery in India.
+                      </p>
+                    ) : (
+                      <div className="kv-grain ground-vanilla rounded-lg border-2 border-ink px-4 py-3.5">
+                        <p className="text-[0.98rem] leading-snug">
+                          Add <strong className="tnum">{formatMoney(delivery.shortfall)}</strong> more for{' '}
+                          <strong>free delivery</strong> in India.
+                        </p>
+                        <div
+                          aria-hidden="true"
+                          className="mt-2.5 h-2.5 overflow-hidden rounded-full border-2 border-ink bg-paper"
+                        >
+                          <div
+                            className="h-full rounded-full bg-ink transition-[width] duration-500 ease-[var(--ease-out-soft)]"
+                            style={{ width: `${delivery.progress}%` }}
+                          />
+                        </div>
+                        <p className="mt-2.5 text-[0.85rem] leading-snug text-ink/70">
+                          Orders under ₹{FREE_DELIVERY_FROM} carry a small delivery charge, added at checkout once you
+                          enter your address. You see it before you pay.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-5 flex items-end justify-between gap-4 border-t-2 border-ink pt-5">
                     <span className="font-display text-[1.3rem] leading-none">Total</span>
-                    <span className="tnum font-display text-[2.2rem] leading-none">{formatMoney(cart.subtotal)}</span>
+                    <span className="text-right">
+                      <span className="tnum block font-display text-[2.2rem] leading-none">{formatMoney(cart.subtotal)}</span>
+                      {!delivery.free && <span className="mt-1.5 block text-[0.8rem] text-ink/60">+ delivery at checkout</span>}
+                    </span>
                   </div>
 
                   <Button
@@ -237,13 +299,15 @@ export function CartPage() {
                   </Button>
                   <p className="mt-3 text-center text-[0.85rem] text-ink/60">
                     {canCheckout
-                      ? 'Secure checkout by Shopify. Delivery outside India is added there.'
+                      ? delivery.free
+                        ? 'Secure checkout by Shopify. Delivery outside India is added there.'
+                        : 'Secure checkout by Shopify. The delivery charge is added there, before you pay.'
                       : 'Checkout opens once the store is connected.'}
                   </p>
                 </div>
 
-                {/* A quiet nudge towards the hampers. */}
-                {hampersLive && (
+                {/* A quiet nudge towards the hampers (while there's room for one). */}
+                {hampersLive && hamperRoom > 0 && (
                   <button
                     type="button"
                     onClick={() => scrollTo('#hampers')}
@@ -269,11 +333,14 @@ export function CartPage() {
 
 function CartLineRow({
   line,
+  max,
   busy,
   onUpdate,
   onRemove,
 }: {
   line: CartLine
+  /** The most this line can go to (hampers are capped per order). */
+  max?: number
   busy: boolean
   onUpdate: (lineId: string, quantity: number) => void
   onRemove: (lineId: string) => void
@@ -385,6 +452,7 @@ function CartLineRow({
         <div className="mt-auto flex items-center justify-between gap-3">
           <QuantitySelector
             quantity={line.quantity}
+            max={max}
             busy={busy}
             itemLabel={itemLabel}
             onChange={(quantity) => {

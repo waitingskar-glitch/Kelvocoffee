@@ -3,6 +3,7 @@ import { heroMedia } from '@/config/site'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import { Button } from './ui/Button'
 import { cn } from '@/lib/cn'
+import { freeDeliveryLine } from '@/config/delivery'
 
 /**
  * The three pouches standing across the seam, laid out like the reference:
@@ -146,7 +147,7 @@ export function Hero() {
   )
 }
 
-const ROLLER_TEXT = 'Free delivery on orders above ₹699'
+const ROLLER_TEXT = freeDeliveryLine
 /** Enough copies that one half of the strip is wider than any screen. */
 const ROLLER_REPEAT = 8
 

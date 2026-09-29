@@ -4,6 +4,7 @@ import { useCatalog } from './catalogContext'
 import { CommerceError, type Cart } from '@/types/shopify'
 import { CartContext, type CartState } from './cartContext'
 import { trackAddToCart } from '@/lib/metaPixel'
+import { MAX_HAMPERS_PER_ORDER, hamperCount, hamperLimitMessage, isHamperHandle, isHamperLine } from '@/config/hampers'
 
 const CONFIRMATION_MS = 1800
 
@@ -21,6 +22,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   )
 
   const [cart, setCart] = useState<Cart | null>(null)
+  // The latest cart for the limit checks below, without re-creating the callbacks.
+  const cartRef = useRef(cart)
+  cartRef.current = cart
   const [isHydrated, setIsHydrated] = useState(false)
   const [pendingVariantIds, setPendingVariantIds] = useState<ReadonlySet<string>>(new Set())
   const [confirmedVariantIds, setConfirmedVariantIds] = useState<ReadonlySet<string>>(new Set())
@@ -82,6 +86,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback<CartState['addItem']>(
     async (merchandiseId, quantity = 1, attributes) => {
       setError(null)
+      // No more than MAX_HAMPERS_PER_ORDER hampers in one order.
+      const handle = resolverRef.current(merchandiseId)?.product.handle
+      if (isHamperHandle(handle) && hamperCount(cartRef.current) + quantity > MAX_HAMPERS_PER_ORDER) {
+        setError(hamperLimitMessage)
+        return false
+      }
       withSet(setPendingVariantIds, merchandiseId, true)
       try {
         const next = await service.add(merchandiseId, quantity, attributes)
@@ -120,6 +130,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateLine = useCallback<CartState['updateLine']>(
     async (lineId, quantity) => {
       setError(null)
+      const line = cartRef.current?.lines.find((l) => l.id === lineId)
+      if (
+        line &&
+        isHamperLine(line) &&
+        quantity > line.quantity &&
+        hamperCount(cartRef.current) - line.quantity + quantity > MAX_HAMPERS_PER_ORDER
+      ) {
+        setError(hamperLimitMessage)
+        return
+      }
       withSet(setPendingLineIds, lineId, true)
       try {
         setCart(await service.update(lineId, quantity))
