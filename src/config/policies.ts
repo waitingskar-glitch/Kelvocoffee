@@ -1,6 +1,6 @@
 import { site } from './site'
 import { brand } from './brand'
-import { FREE_DELIVERY_FROM } from './delivery'
+import { DELIVERY_CHARGE, FREE_DELIVERY_FROM } from './delivery'
 
 /**
  * Legal pages.
@@ -170,8 +170,7 @@ export const policies: Policy[] = [
       {
         heading: 'Shipping charges',
         body: [
-          `Delivery within India is free on orders of ₹${FREE_DELIVERY_FROM} and above. Below that, a delivery charge is added at checkout and shown before you pay. Delivery outside India is charged separately, also at checkout.`,
-          'TO CONFIRM: state the delivery charge for orders under the free-delivery threshold, as set in your shipping rates.',
+          `Delivery within India is free on orders of ₹${FREE_DELIVERY_FROM} and above. Below that, it is a flat ₹${DELIVERY_CHARGE}, added at checkout and shown before you pay. The threshold is measured on the order total after any discount. Delivery outside India is charged separately, also at checkout.`,
         ],
       },
       {

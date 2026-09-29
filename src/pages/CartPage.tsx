@@ -4,7 +4,7 @@ import { useCatalog } from '@/context/catalogContext'
 import { site } from '@/config/site'
 import { flavours, metaForHandle } from '@/config/catalog'
 import { shopOrder } from '@/config/shopify'
-import { FREE_DELIVERY_FROM } from '@/config/delivery'
+import { DELIVERY_CHARGE, FREE_DELIVERY_FROM } from '@/config/delivery'
 import { MAX_HAMPERS_PER_ORDER, customerCareHref, hamperCount, isHamperLine } from '@/config/hampers'
 import { brand } from '@/config/brand'
 import { formatMoney } from '@/lib/format'
@@ -38,11 +38,15 @@ export function CartPage() {
   // Free delivery in India at or above the threshold; below it, what's left to go.
   const subtotal = cart?.subtotal.amount ?? 0
   const currencyCode = cart?.subtotal.currencyCode ?? 'INR'
+  const free = subtotal >= FREE_DELIVERY_FROM
   const delivery = {
-    free: subtotal >= FREE_DELIVERY_FROM,
+    free,
+    charge: { amount: free ? 0 : DELIVERY_CHARGE, currencyCode },
     shortfall: { amount: Math.max(0, FREE_DELIVERY_FROM - subtotal), currencyCode },
     progress: Math.min(100, (subtotal / FREE_DELIVERY_FROM) * 100),
   }
+  // The total within India, delivery included (Shopify's checkout charges the same).
+  const total = { amount: subtotal + delivery.charge.amount, currencyCode }
 
   useEffect(() => {
     document.title = `Your cart | ${site.legalName}`
@@ -243,7 +247,7 @@ export function CartPage() {
                     </div>
                     <div className="flex items-baseline justify-between gap-4">
                       <dt className="text-ink/70">Delivery in India</dt>
-                      <dd className="font-semibold">{delivery.free ? 'Free' : 'Added at checkout'}</dd>
+                      <dd className="tnum font-semibold">{delivery.free ? 'Free' : formatMoney(delivery.charge)}</dd>
                     </div>
                   </dl>
 
@@ -272,8 +276,7 @@ export function CartPage() {
                           />
                         </div>
                         <p className="mt-2.5 text-[0.85rem] leading-snug text-ink/70">
-                          Orders under ₹{FREE_DELIVERY_FROM} carry a small delivery charge, added at checkout once you
-                          enter your address. You see it before you pay.
+                          Orders under ₹{FREE_DELIVERY_FROM} carry a flat ₹{DELIVERY_CHARGE} delivery charge within India.
                         </p>
                       </div>
                     )}
@@ -282,8 +285,7 @@ export function CartPage() {
                   <div className="mt-5 flex items-end justify-between gap-4 border-t-2 border-ink pt-5">
                     <span className="font-display text-[1.3rem] leading-none">Total</span>
                     <span className="text-right">
-                      <span className="tnum block font-display text-[2.2rem] leading-none">{formatMoney(cart.subtotal)}</span>
-                      {!delivery.free && <span className="mt-1.5 block text-[0.8rem] text-ink/60">+ delivery at checkout</span>}
+                      <span className="tnum block font-display text-[2.2rem] leading-none">{formatMoney(total)}</span>
                     </span>
                   </div>
 
@@ -299,9 +301,7 @@ export function CartPage() {
                   </Button>
                   <p className="mt-3 text-center text-[0.85rem] text-ink/60">
                     {canCheckout
-                      ? delivery.free
-                        ? 'Secure checkout by Shopify. Delivery outside India is added there.'
-                        : 'Secure checkout by Shopify. The delivery charge is added there, before you pay.'
+                      ? 'Secure checkout by Shopify. Delivery outside India is added there.'
                       : 'Checkout opens once the store is connected.'}
                   </p>
                 </div>
