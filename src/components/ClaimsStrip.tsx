@@ -134,7 +134,7 @@ export function ClaimsStrip() {
               >
                 <ClaimArtSvg name={claim.art} index={index} />
               </div>
-              <span className="font-display text-[1.24rem] leading-[1.05]">
+              <span className="text-center font-display text-[1.24rem] leading-[1.05] text-balance">
                 {claim.label}
               </span>
             </div>
