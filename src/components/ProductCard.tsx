@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { FlavourMeta } from '@/config/catalog'
 import type { Product, ProductVariant } from '@/types/shopify'
 import { defaultVariant } from '@/services/products'
-import { formatMoney } from '@/lib/format'
+import { cupsIn, formatMoney, perCup } from '@/lib/format'
 import { Link } from '@/router'
 import { AddToCartButton } from './AddToCartButton'
 import { ProductVariantSelector, variantDetail } from './ProductVariantSelector'
@@ -25,6 +25,7 @@ export function ProductCard({ product, meta, eager, onRequestNotify }: Props) {
   const selected = product.variants.find((v) => v.id === selectedId) ?? product.variants[0]
   const href = `/products/${product.handle}`
   const detail = selected ? variantDetail(selected.title) : null
+  const cupPrice = selected ? perCup(selected.price, cupsIn(selected.title)) : null
 
   return (
     // The pouch stands above the card's top edge, so the article reserves that overhang.
@@ -75,7 +76,13 @@ export function ProductCard({ product, meta, eager, onRequestNotify }: Props) {
             {selected ? (
               <p className="flex items-baseline justify-center gap-3">
                 <span className="tnum font-display text-[2rem] leading-none">{formatMoney(selected.price)}</span>
-                {detail && <span className="label">{detail}</span>}
+                {detail && (
+                  <span className="label">
+                    {detail}
+                    {/* The price as a cup of coffee, which is easier to judge than the pack. */}
+                    {cupPrice && <> · {cupPrice}</>}
+                  </span>
+                )}
               </p>
             ) : (
               <p className="text-[0.95rem] font-semibold">Not on sale yet.</p>

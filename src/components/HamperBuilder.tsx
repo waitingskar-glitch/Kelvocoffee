@@ -3,7 +3,7 @@ import { flavours } from '@/config/catalog'
 import { productHandles, shopOrder, type FlavourKey } from '@/config/shopify'
 import { useCatalog } from '@/context/catalogContext'
 import { useCart } from '@/context/cartContext'
-import { formatMoney } from '@/lib/format'
+import { formatAmount, formatMoney, perCup } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { ProductVariant } from '@/types/shopify'
 import { Button } from './ui/Button'
@@ -99,6 +99,10 @@ export function HamperBuilder() {
 
   const remaining = capacity - picks.length
   const cups = capacity * (ml / 10)
+  // What the same packs cost bought one by one (every flavour is priced alike), so the saving can be said plainly.
+  const single = catalog ? Object.values(catalog.byFlavour).find(Boolean) : undefined
+  const singleVariant = single ? variantFor(single.variants, ml) : undefined
+  const saving = variant && singleVariant ? singleVariant.price.amount * capacity - variant.price.amount : 0
 
   return (
     <section id="hampers" aria-labelledby="hamper-heading" className="scroll-mt-24 px-3 pb-16 sm:px-4 sm:pb-20">
@@ -146,6 +150,15 @@ export function HamperBuilder() {
               ]}
             />
           </div>
+
+          {/* Gifting and bigger orders are handled by hand. */}
+          <p className="mx-auto max-w-[26rem] text-center text-[0.95rem] leading-snug">
+            Gifting, or stocking up for the office? Call us on{' '}
+            <a href={customerCareHref} className="link-underline tnum font-semibold whitespace-nowrap">
+              {brand.customerCare}
+            </a>{' '}
+            for bigger orders.
+          </p>
         </div>
 
         {/* --- 3: the flavours, the box filling up, and checkout. Stretches to the full height. --- */}
@@ -276,7 +289,13 @@ export function HamperBuilder() {
               )}
               <p className="label mt-2 whitespace-nowrap">
                 {capacity} × {ml} ml · {cups} cups
+                {variant && <> · {perCup(variant.price, cups)}</>}
               </p>
+              {saving > 0 && variant && (
+                <p className="mt-2 text-[0.92rem] leading-snug font-semibold">
+                  {formatAmount(saving, variant.price.currencyCode)} less than {capacity === 2 ? 'two' : 'four'} single packs.
+                </p>
+              )}
             </div>
             <Button
               size="lg"

@@ -18,6 +18,8 @@ export interface FlavourMeta {
   note: string
   /** One line of card copy. Three beats, then stop. */
   blurb: string
+  /** How it's best made: a serving suggestion, never a tasting note. */
+  bestWith: string
   /** CSS class that sets this flavour's ground on a .kv-surface / .kv-grain. */
   ground: string
   /** The ground as a colour, for the odd inline swatch. */
@@ -81,6 +83,7 @@ export const flavours: Record<FlavourKey, FlavourMeta> = {
     name: 'Classic',
     note: 'Just coffee',
     blurb: 'Filter coffee, minus the filter. No flavour added. The one you grew up on.',
+    bestWith: 'Hot milk, first thing.',
     ground: 'ground-classic',
     accent: 'var(--color-classic)',
     image: photo('classic', 'front', 'Classic'),
@@ -92,6 +95,7 @@ export const flavours: Record<FlavourKey, FlavourMeta> = {
     name: 'Vanilla',
     note: 'Soft and sweet',
     blurb: 'Soft, sweet and easy. The one you finish without noticing.',
+    bestWith: 'Cold milk over ice.',
     ground: 'ground-vanilla',
     accent: 'var(--color-vanilla)',
     image: photo('vanilla', 'front', 'Vanilla'),
@@ -103,6 +107,7 @@ export const flavours: Record<FlavourKey, FlavourMeta> = {
     name: 'Hazelnut',
     note: 'Nutty and warm',
     blurb: 'Nutty and warm. Very good with a lot of milk.',
+    bestWith: 'Hot milk on a slow afternoon.',
     ground: 'ground-hazelnut',
     accent: 'var(--color-hazelnut)',
     image: photo('hazelnut', 'front', 'Hazelnut'),
@@ -114,6 +119,7 @@ export const flavours: Record<FlavourKey, FlavourMeta> = {
     name: 'Caramel',
     note: 'Buttery',
     blurb: 'Buttery, a bit dessert-y. Tastes like a treat. Drinks like a Tuesday.',
+    bestWith: 'Iced, or hot with extra milk.',
     ground: 'ground-caramel',
     accent: 'var(--color-caramel)',
     image: photo('caramel', 'front', 'Caramel'),
@@ -125,6 +131,7 @@ export const flavours: Record<FlavourKey, FlavourMeta> = {
     name: 'Whiskey',
     note: 'Oaky. Zero alcohol',
     blurb: 'All the cask. None of the alcohol. The evening one.',
+    bestWith: 'Hot milk, after dinner.',
     ground: 'ground-whiskey',
     accent: 'var(--color-whiskey)',
     image: photo('whiskey', 'front', 'Whiskey'),

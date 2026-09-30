@@ -3,7 +3,7 @@ import type { FlavourKey } from './shopify'
 export interface Testimonial {
   quote: string
   name: string
-  /** e.g. "Indiranagar, Bengaluru" */
+  /** e.g. "Bandra, Mumbai" */
   context?: string
   /** Their star rating, 1 to 5, if they gave one. */
   rating?: number
@@ -29,7 +29,7 @@ export interface Testimonial {
  *   {
  *     quote: 'I stopped buying cafe lattes.',
  *     name: 'Ananya',
- *     context: 'Indiranagar, Bengaluru',
+ *     context: 'Bandra, Mumbai',
  *     rating: 5,
  *     headline: 'Tastes like dessert.',
  *     flavour: 'hazelnut',

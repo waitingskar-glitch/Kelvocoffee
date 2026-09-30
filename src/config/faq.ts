@@ -16,10 +16,20 @@ export interface FaqItem {
 }
 
 export const faqs: FaqItem[] = [
+  // The doubts a first-time buyer has, in the order they come up.
+  {
+    question: 'Is there alcohol in the Whiskey one?',
+    answer: 'None at all. Whiskey is the flavour, not a spirit. It tastes like whiskey. It is not whiskey.',
+  },
   {
     question: 'Is this instant coffee?',
     answer:
       "No. It's a liquid concentrate: 80% coffee, 20% chicory. You pour it, you don't dissolve it.",
+  },
+  {
+    question: 'Is it like filter coffee?',
+    answer:
+      "It's our take on it: the same coffee and chicory, as a concentrate, so there's no filter and no waiting. Classic is just that. The other four add a flavour.",
   },
   {
     question: 'How do I make a cup?',
@@ -30,21 +40,18 @@ export const faqs: FaqItem[] = [
     answer: 'Ten millilitres makes a cup. So 50 ml is five cups and 100 ml is ten. Go stronger or lighter as you like.',
   },
   {
-    question: 'How do I store it?',
+    question: 'How do I store it, and how long does it keep?',
     answer: `${brand.storage} ${brand.shelfLife}`,
-  },
-  {
-    question: 'Which one should I start with?',
-    answer: 'Build a hamper. Pick any two flavours, or any four, for one flat price, and find your favourite.',
-  },
-  {
-    question: 'Is there alcohol in the Whiskey one?',
-    answer: 'None at all. It tastes like whiskey. It is not whiskey.',
   },
   {
     question: 'What goes into the flavours?',
     answer:
       'Nature-identical flavourings. Classic has none: it is just coffee and chicory. Every ingredient is listed on the pack and on each product page.',
+  },
+  {
+    question: 'Which one should I start with?',
+    answer:
+      'Build a hamper. Pick any two flavours, or any four, for one flat price. It costs less per cup than single packs, and you find your favourite.',
   },
   {
     question: 'What does delivery cost?',
@@ -54,6 +61,10 @@ export const faqs: FaqItem[] = [
   {
     question: 'Do you deliver outside India?',
     answer: "Yes, to a set of countries. It's charged separately and the cost shows at checkout once you add your address.",
+  },
+  {
+    question: "What if something's wrong with my order?",
+    answer: `If it arrives damaged, or isn't what you ordered, call us on ${brand.customerCare} with your order number and we'll replace it or refund it.`,
   },
 ]
 
@@ -65,14 +76,16 @@ export function faqsForProduct(flavour: FlavourKey): FaqItem[] {
   const pick = (question: string) => faqs.find((item) => item.question === question)
   const hasWhiskey = flavour === 'whiskey'
   return [
+    hasWhiskey ? pick('Is there alcohol in the Whiskey one?') : undefined,
     pick('Is this instant coffee?'),
+    pick('Is it like filter coffee?'),
     pick('How many cups is a pack?'),
     pick('How do I make a cup?'),
-    hasWhiskey ? pick('Is there alcohol in the Whiskey one?') : undefined,
     pick('What goes into the flavours?'),
-    pick('How do I store it?'),
+    pick('How do I store it, and how long does it keep?'),
     pick('Which one should I start with?'),
     pick('What does delivery cost?'),
     pick('Do you deliver outside India?'),
+    pick("What if something's wrong with my order?"),
   ].filter((item): item is FaqItem => Boolean(item))
 }

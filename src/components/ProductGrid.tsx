@@ -8,6 +8,7 @@ import { Button } from './ui/Button'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import type { FlavourKey } from '@/config/shopify'
 import { cn } from '@/lib/cn'
+import { cupsIn, perCup } from '@/lib/format'
 
 interface Props {
   onRequestNotify: (product: Product, variant?: ProductVariant) => void
@@ -29,7 +30,7 @@ export function ProductGrid({ onRequestNotify }: Props) {
             One pour.
           </>
         }
-        intro="Same coffee underneath. Pick the one you're in the mood for."
+        intro="Same coffee underneath. Pick the one you're in the mood for. 50 ml makes 5 cups, 100 ml makes 10."
       />
 
       <div className="mt-12 sm:mt-16">
@@ -90,7 +91,14 @@ export function ProductGrid({ onRequestNotify }: Props) {
  * and one plain link down.
  */
 function HamperTeaser({ onBuild }: { onBuild: () => void }) {
+  const { catalog } = useCatalog()
   const slots: Array<FlavourKey | null> = ['caramel', 'hazelnut', null, null]
+  // The best value on the site, said as a cup: the Four at its cheapest per cup.
+  const best = catalog?.hampers.four?.variants
+    .map((variant) => ({ variant, cups: cupsIn(variant.title) * 4 }))
+    .filter(({ cups }) => cups > 0)
+    .sort((a, b) => a.variant.price.amount / a.cups - b.variant.price.amount / b.cups)[0]
+  const bestPerCup = best ? perCup(best.variant.price, best.cups) : null
   return (
     <div className="kv-surface ground-vanilla flex h-full w-full flex-col justify-between gap-8 rounded-xl border-2 border-ink p-6 text-left sm:min-h-[22rem] sm:p-8">
       <div>
@@ -100,7 +108,8 @@ function HamperTeaser({ onBuild }: { onBuild: () => void }) {
           Mix your own.
         </p>
         <p className="mt-4 max-w-[26ch] text-[1.02rem] leading-snug font-medium">
-          Two packs or four, any flavours. One flat price.
+          Two packs or four, any flavours. One flat price
+          {bestPerCup ? <>, and a hamper of four works out to {bestPerCup}.</> : '.'}
         </p>
       </div>
 

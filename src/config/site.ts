@@ -11,10 +11,10 @@ export const site = {
   legalName: 'Kelvo Coffee',
   tagline: 'Coffee, but make it your flavour.',
   /** The document title every page restores when it unmounts. */
-  defaultTitle: 'Kelvo Coffee | Coffee, but make it your flavour.',
+  defaultTitle: 'Kelvo Coffee | Flavoured Coffee Concentrate, Made in Mumbai',
   /** Set VITE_SITE_URL in production for canonical + Open Graph URLs. */
   url: (typeof env.VITE_SITE_URL === 'string' && env.VITE_SITE_URL.trim()) || 'https://kelvocoffee.in',
-  city: 'Bengaluru',
+  city: 'Mumbai',
 } as const
 
 /**

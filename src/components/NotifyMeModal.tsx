@@ -111,7 +111,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
             {isRestock ? 'Back in stock' : 'Early access'}
           </p>
           <h2 id="notify-heading" className="mt-3 text-[2.2rem] leading-none">
-            {status === 'done' ? "You're on the list." : `Be first to get ${target.title}.`}
+            {status === 'done' ? "You're on the list." : isRestock ? "Be the first to know when it's back." : `Be first to get ${target.title}.`}
           </h2>
         </div>
         <button
@@ -141,7 +141,7 @@ export function NotifyMeModal({ target, onClose }: Props) {
         <form onSubmit={handleSubmit} noValidate className="mt-5">
           <p id="notify-description" className="text-[1.02rem] leading-relaxed">
             {isRestock
-              ? `${target.title} is out of stock right now. Leave your details and we'll email you the moment it's back.`
+              ? `${target.title} is out of stock right now. Leave your details and we'll email you once, the moment it's back. No spam.`
               : `${target.title} isn't out yet. Leave your details and you'll hear before anyone else.`}
           </p>
 

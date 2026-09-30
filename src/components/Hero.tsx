@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
-import { heroMedia } from '@/config/site'
+import { heroMedia, site } from '@/config/site'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import { Button } from './ui/Button'
 import { cn } from '@/lib/cn'
 import { freeDeliveryLine } from '@/config/delivery'
+import { useCatalog } from '@/context/catalogContext'
+import { cupsIn, perCup } from '@/lib/format'
 
 /**
  * The three pouches standing across the seam, laid out like the reference:
@@ -37,6 +39,13 @@ const CLUSTER: Array<{
  */
 export function Hero() {
   const scrollTo = useSectionNav()
+  const { catalog } = useCatalog()
+  // The best value on the site, said as a cup: the hamper of four at its cheapest per cup.
+  const best = catalog?.hampers.four?.variants
+    .map((variant) => ({ variant, cups: cupsIn(variant.title) * 4 }))
+    .filter(({ cups }) => cups > 0)
+    .sort((a, b) => a.variant.price.amount / a.cups - b.variant.price.amount / b.cups)[0]
+  const hamperPerCup = best ? perCup(best.variant.price, best.cups) : null
 
   return (
     <section
@@ -108,6 +117,8 @@ export function Hero() {
               leaves (three lines at 0.88 leading) while still fitting
               "your flavour." across the panel (about 5.9em, so width / 6.2). */}
           <div className="flex w-full flex-col items-center justify-center [--hero-inset:4.5rem] [--hero-scale:1] [--hero-sub:3.3rem] sm:[--hero-inset:7rem] sm:[--hero-scale:1.15] sm:[--hero-sub:4.37rem] max-lg:h-[calc(25svh*var(--hero-scale))] lg:block">
+            {/* Where it's from, above the line (desktop only: on phones the slot is budgeted to the pixel). */}
+            <p className="label animate-fade-up mb-5 hidden lg:block">Made in {site.city}</p>
             <h1
               id="hero-heading"
               className="animate-fade-up text-h1 font-display max-lg:[font-size:min(calc((25svh*var(--hero-scale)-var(--hero-sub)-1svh)/2.7),calc((100vw-var(--hero-inset))/6.2))]"
@@ -124,10 +135,10 @@ export function Hero() {
             </h1>
 
             <p
-              className="animate-fade-up mt-[1svh] max-w-[26ch] text-[1.05rem] leading-snug font-medium sm:text-[1.38rem] lg:mt-7 lg:text-[1.35rem]"
+              className="animate-fade-up mt-[1svh] max-w-[34ch] text-[1.05rem] leading-snug font-medium sm:text-[1.38rem] lg:mt-7 lg:max-w-[30ch] lg:text-[1.35rem]"
               style={{ animationDelay: '0.15s' }}
             >
-              Flavoured coffee concentrate. Ten millilitres. One cup. Done.
+              Flavoured coffee concentrate. Add 10&nbsp;ml to hot or cold milk. One cup. Done.
             </p>
           </div>
 
@@ -140,6 +151,19 @@ export function Hero() {
             >
               Make your coffee today
             </Button>
+            {/* The best value, one tap away: the hamper builder (dropped on short phones, where the hero is budgeted to one screen). */}
+            {hamperPerCup && (
+              <p className="mt-3 text-[0.95rem] max-lg:[@media(max-height:720px)]:hidden lg:mt-4 lg:text-[1rem]">
+                <button
+                  type="button"
+                  onClick={() => scrollTo('#hampers')}
+                  className="link-underline font-semibold"
+                >
+                  Or build a hamper
+                </button>
+                , {hamperPerCup}.
+              </p>
+            )}
           </div>
         </div>
       </div>

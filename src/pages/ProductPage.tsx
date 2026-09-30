@@ -10,7 +10,7 @@ import { Testimonials } from '@/components/Testimonials'
 import { FaqSection } from '@/components/FaqSection'
 import { defaultVariant, listProducts } from '@/services/products'
 import { useCatalog } from '@/context/catalogContext'
-import { formatMoney } from '@/lib/format'
+import { cupsIn, formatMoney, perCup } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import { Link } from '@/router'
@@ -39,6 +39,7 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
 
   const selected = product.variants.find((v) => v.id === selectedId) ?? product.variants[0]
   const detail = selected ? variantDetail(selected.title) : null
+  const cupPrice = selected ? perCup(selected.price, cupsIn(selected.title)) : null
   const displayName = meta.name
   const schemaImage = `${site.url}${meta.image.src}`
 
@@ -130,6 +131,11 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
             </h1>
 
             <p className="mt-5 max-w-[34ch] text-[1.15rem] leading-snug font-medium">{meta.blurb}</p>
+            {/* A serving suggestion, so the flavour comes with an occasion. */}
+            <p className="mt-3 text-[1rem] leading-snug">
+              <span className="label mr-2">Best with</span>
+              {meta.bestWith}
+            </p>
 
             <div className="mt-8 flex flex-col gap-5">
               <ProductVariantSelector
@@ -142,7 +148,12 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
               {selected ? (
                 <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <span className="tnum font-display text-[3rem] leading-none">{formatMoney(selected.price)}</span>
-                  {detail && <span className="label">{detail}</span>}
+                  {detail && (
+                    <span className="label">
+                      {detail}
+                      {cupPrice && <> · {cupPrice}</>}
+                    </span>
+                  )}
                 </p>
               ) : (
                 <p className="text-[1rem] font-semibold">Not on sale yet. Join the list and you&rsquo;ll hear first.</p>
