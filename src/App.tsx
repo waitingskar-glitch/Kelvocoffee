@@ -6,7 +6,6 @@ import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { ProductGrid } from './components/ProductGrid'
 import { HowItWorks } from './components/HowItWorks'
-import { Testimonials } from './components/Testimonials'
 import { HamperBuilder } from './components/HamperBuilder'
 import { ClaimsStrip } from './components/ClaimsStrip'
 import { Statement } from './components/Statement'
@@ -159,7 +158,6 @@ function HomePage() {
         <Statement />
         <HotColdBand />
         <HowItWorks />
-        <Testimonials />
         <FaqSection />
       </main>
 

@@ -4,9 +4,7 @@ import { flavours, type FlavourMeta } from '@/config/catalog'
 import { shopOrder } from '@/config/shopify'
 import { brand, ingredientsFor, kcalPer100ml } from '@/config/brand'
 import { site } from '@/config/site'
-import { testimonials, testimonialsForProduct } from '@/config/testimonials'
 import { faqsForProduct } from '@/config/faq'
-import { Testimonials } from '@/components/Testimonials'
 import { FaqSection } from '@/components/FaqSection'
 import { defaultVariant, listProducts } from '@/services/products'
 import { useCatalog } from '@/context/catalogContext'
@@ -85,15 +83,6 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
   }, [product, meta, schemaImage])
 
   const others = catalog ? listProducts(catalog).filter((item) => item.product.handle !== product.handle) : []
-  // This product's own quotes, plus any general review about this flavour.
-  const reviews = useMemo(() => {
-    const own = testimonialsForProduct(product.handle)
-    const general = testimonials.filter((item) => item.flavour === meta.key)
-    return [...own, ...general.filter((item) => !own.includes(item))].map((item) => ({
-      ...item,
-      flavour: item.flavour ?? meta.key,
-    }))
-  }, [product.handle, meta])
   const productFaqs = useMemo(() => faqsForProduct(meta.key), [meta])
   // The hamper card: its lowest price (a Duo of 50 ml packs).
   const hamperFrom = catalog?.hampers.duo?.variants.reduce<Money | null>(
@@ -240,15 +229,6 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
           </ol>
         </div>
       </section>
-
-      {/* --- What people say about this one: only real reviews (the section hides itself until there are some). --- */}
-      <Testimonials
-        id="pdp-reviews"
-        items={reviews}
-        flavour={meta.key}
-        title="In their words."
-        intro={`What people say about ${meta.name}.`}
-      />
 
       {/* --- The questions that matter for this product, from the home page's list. --- */}
       <FaqSection id="pdp-faq" items={productFaqs} />
