@@ -13,9 +13,11 @@ import { cn } from '@/lib/cn'
  */
 export function OfferNote({ variant = 'inline' }: { variant?: 'inline' | 'panel' }) {
   const state = useOffer()
+  // Nothing at all before the day: the code is handed out in person, and
+  // trailing it early would take orders that cannot be filled.
   if (!isOfferVisible(state)) return null
 
-  return variant === 'panel' ? <OfferPanel live={state === 'live'} /> : <OfferInline text={offerBadge(state)} />
+  return variant === 'panel' ? <OfferPanel /> : <OfferInline text={offerBadge(state)} />
 }
 
 function OfferInline({ text }: { text: string }) {
@@ -28,17 +30,15 @@ function OfferInline({ text }: { text: string }) {
   )
 }
 
-function OfferPanel({ live }: { live: boolean }) {
+function OfferPanel() {
   return (
     <div className="mt-5 rounded-xl border-2 border-ink p-4 shape-squircle">
-      <p className="label text-ink/70">{live ? `Today only · ${offer.day}` : `On ${offer.day}`}</p>
+      <p className="label text-ink/70">Today only</p>
       <p className="mt-1.5 text-[0.98rem] leading-snug font-semibold">
         {offer.percentOff}% off your whole order
       </p>
       <p className="mt-1.5 text-[0.85rem] leading-snug text-ink/70">
-        {live
-          ? 'Enter the code at checkout to take it off your total.'
-          : `The code starts working on ${offer.day} and stops at midnight.`}
+        Enter the code at checkout. It expires at midnight tonight.
       </p>
       <CopyCode />
     </div>
