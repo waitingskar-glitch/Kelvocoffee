@@ -4,6 +4,7 @@ import { productHandles, shopOrder, type FlavourKey } from '@/config/shopify'
 import { useCatalog } from '@/context/catalogContext'
 import { useCart } from '@/context/cartContext'
 import { formatAmount, formatMoney, perCup } from '@/lib/format'
+import { OfferNote } from './OfferNote'
 import { cn } from '@/lib/cn'
 import type { ProductVariant } from '@/types/shopify'
 import { Button } from './ui/Button'
@@ -296,6 +297,7 @@ export function HamperBuilder() {
                   {formatAmount(saving, variant.price.currencyCode)} less than {capacity === 2 ? 'two' : 'four'} single packs.
                 </p>
               )}
+              <OfferNote />
             </div>
             <Button
               size="lg"
