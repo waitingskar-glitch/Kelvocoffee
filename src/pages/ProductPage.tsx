@@ -13,6 +13,7 @@ import { cn } from '@/lib/cn'
 import { useSectionNav } from '@/hooks/useSectionNav'
 import { Link } from '@/router'
 import { AddToCartButton } from '@/components/AddToCartButton'
+import { OfferNote } from '@/components/OfferNote'
 import { ProductVariantSelector, variantDetail } from '@/components/ProductVariantSelector'
 import { NotifyMeModal, type NotifyTarget } from '@/components/NotifyMeModal'
 import { ArrowRightIcon } from '@/components/ui/icons'
@@ -135,15 +136,19 @@ export function ProductPage({ product, meta }: { product: Product; meta: Flavour
               />
 
               {selected ? (
-                <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <span className="tnum font-display text-[3rem] leading-none">{formatMoney(selected.price)}</span>
-                  {detail && (
-                    <span className="label">
-                      {detail}
-                      {cupPrice && <> · {cupPrice}</>}
-                    </span>
-                  )}
-                </p>
+                <div>
+                  <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                    <span className="tnum font-display text-[3rem] leading-none">{formatMoney(selected.price)}</span>
+                    {detail && (
+                      <span className="label">
+                        {detail}
+                        {cupPrice && <> · {cupPrice}</>}
+                      </span>
+                    )}
+                  </p>
+                  {/* The dated code, said where the price is read and the buy decision is made. */}
+                  <OfferNote />
+                </div>
               ) : (
                 <p className="text-[1rem] font-semibold">Not on sale yet. Join the list and you&rsquo;ll hear first.</p>
               )}
