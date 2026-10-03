@@ -157,7 +157,7 @@ function previewVariants(handleSeed: string, available: boolean) {
     {
       id: `preview://variant/${handleSeed}/50ml`,
       title: '50 ml - 5 servings',
-      price: { amount: 199, currencyCode: PREVIEW_CURRENCY },
+      price: { amount: 250, currencyCode: PREVIEW_CURRENCY },
       compareAtPrice: null,
       availableForSale: available,
       selectedOptions: { Quantity: '50 ml - 5 servings' },
@@ -165,7 +165,7 @@ function previewVariants(handleSeed: string, available: boolean) {
     {
       id: `preview://variant/${handleSeed}/100ml`,
       title: '100 ml - 10 servings',
-      price: { amount: 299, currencyCode: PREVIEW_CURRENCY },
+      price: { amount: 350, currencyCode: PREVIEW_CURRENCY },
       compareAtPrice: null,
       availableForSale: available,
       selectedOptions: { Quantity: '100 ml - 10 servings' },
