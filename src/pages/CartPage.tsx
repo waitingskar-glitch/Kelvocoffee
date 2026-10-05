@@ -5,7 +5,6 @@ import { site } from '@/config/site'
 import { flavours, metaForHandle } from '@/config/catalog'
 import { shopOrder } from '@/config/shopify'
 import { DELIVERY_CHARGE, FREE_DELIVERY_FROM } from '@/config/delivery'
-import { OfferNote } from '@/components/OfferNote'
 import { MAX_HAMPERS_PER_ORDER, customerCareHref, hamperCount, isHamperLine } from '@/config/hampers'
 import { brand } from '@/config/brand'
 import { formatMoney } from '@/lib/format'
@@ -289,8 +288,6 @@ export function CartPage() {
                       <span className="tnum block font-display text-[2.2rem] leading-none">{formatMoney(total)}</span>
                     </span>
                   </div>
-
-                  <OfferNote variant="panel" />
 
                   <Button
                     fullWidth

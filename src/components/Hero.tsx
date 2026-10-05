@@ -4,8 +4,6 @@ import { useSectionNav } from '@/hooks/useSectionNav'
 import { Button } from './ui/Button'
 import { cn } from '@/lib/cn'
 import { freeDeliveryLine } from '@/config/delivery'
-import { isOfferVisible, offerLine } from '@/config/offer'
-import { useOffer } from '@/hooks/useOffer'
 import { useCatalog } from '@/context/catalogContext'
 import { cupsIn, perCup } from '@/lib/format'
 
@@ -173,6 +171,7 @@ export function Hero() {
   )
 }
 
+const ROLLER_TEXT = freeDeliveryLine
 /** Enough copies that one half of the strip is wider than any screen. */
 const ROLLER_REPEAT = 8
 
@@ -183,27 +182,16 @@ const ROLLER_REPEAT = 8
  * it stands still.
  */
 function DeliveryRoller() {
-  const state = useOffer()
-  // The offer leads while it is running; delivery is the standing promise.
-  const lines = isOfferVisible(state) ? [offerLine(state), freeDeliveryLine] : [freeDeliveryLine]
-
   const half = (copy: number) => (
     <div className="flex shrink-0 items-center" aria-hidden={copy > 0 ? true : undefined}>
-      {Array.from({ length: ROLLER_REPEAT }, (_, index) =>
-        lines.map((line, lineIndex) => (
-          <span
-            key={`${index}-${lineIndex}`}
-            className="flex items-center"
-            /* Read once by a screen reader; the rest is visual repetition. */
-            aria-hidden={index > 0 ? true : undefined}
-          >
-            <span className="px-5 sm:px-7">{line}</span>
-            <svg viewBox="-1 -1 2 2" className="size-3 shrink-0 fill-caramel" aria-hidden="true">
-              <path d="M0-1C.12-.12.12-.12 1 0C.12.12.12.12 0 1C-.12.12-.12.12-1 0C-.12-.12-.12-.12 0-1Z" />
-            </svg>
-          </span>
-        )),
-      )}
+      {Array.from({ length: ROLLER_REPEAT }, (_, index) => (
+        <span key={index} className="flex items-center" aria-hidden={index > 0 ? true : undefined}>
+          <span className="px-5 sm:px-7">{ROLLER_TEXT}</span>
+          <svg viewBox="-1 -1 2 2" className="size-3 shrink-0 fill-caramel" aria-hidden="true">
+            <path d="M0-1C.12-.12.12-.12 1 0C.12.12.12.12 0 1C-.12.12-.12.12-1 0C-.12-.12-.12-.12 0-1Z" />
+          </svg>
+        </span>
+      ))}
     </div>
   )
 
