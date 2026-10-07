@@ -140,7 +140,7 @@ export function Hero() {
                 was: the proof does the subheading's job. */}
             {heroReview && (
               <figure className="animate-fade-up mt-[1.3svh] lg:mt-7" style={{ animationDelay: '0.15s' }}>
-                <blockquote className="max-w-[32ch] text-[1.08rem] leading-snug font-medium text-balance sm:text-[1.4rem] lg:max-w-[28ch] lg:text-[1.36rem]">
+                <blockquote className="max-w-[32ch] text-[0.86rem] leading-snug font-medium text-balance sm:text-[1.12rem] lg:max-w-[28ch] lg:text-[1.09rem]">
                   &ldquo;{heroReview.quote}&rdquo;
                 </blockquote>
                 {heroRating && (
