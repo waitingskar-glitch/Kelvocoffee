@@ -184,16 +184,22 @@ export function HamperBuilder() {
               {shopOrder.map((key) => {
                 const meta = flavours[key]
                 const count = picks.filter((pick) => pick === key).length
+                // The hampers aren't stock-tracked themselves, so a sold-out
+                // pack would otherwise go in the box and be ordered. Check the
+                // flavour's pack for the size being built, not the flavour as a
+                // whole: 50 ml can run out while 100 ml is still on the shelf.
+                const flavourProduct = catalog?.byFlavour[key]
+                const soldOut = flavourProduct ? !variantFor(flavourProduct.variants, ml)?.availableForSale : false
                 return (
                   <li key={key}>
                     <button
                       type="button"
                       onClick={() => addPick(key)}
-                      disabled={full || atLimit}
-                      aria-label={`Add ${meta.name}${count ? ` (${count} in)` : ''}`}
+                      disabled={full || atLimit || soldOut}
+                      aria-label={`${meta.name}${soldOut ? ' (sold out)' : `${count ? ` (${count} in)` : ''}`}`}
                       className={cn(
                         'group relative flex w-full flex-col overflow-hidden shape-squircle border-2 border-ink bg-paper transition-[transform,opacity] duration-200 enabled:hover:-translate-y-1 disabled:cursor-not-allowed',
-                        ((full && count === 0) || atLimit) && 'opacity-40',
+                        ((full && count === 0) || atLimit || soldOut) && 'opacity-40',
                       )}
                     >
                       {/* The flavour's ground with a fine, faint grid (a smaller square than the panels'). */}
@@ -219,9 +225,18 @@ export function HamperBuilder() {
                       <span className="border-t-2 border-ink py-1.5 font-display text-[0.64rem] leading-none min-[400px]:text-[0.72rem] sm:text-[0.9rem]">
                         {meta.name}
                       </span>
-                      {count > 0 && (
+                      {count > 0 && !soldOut && (
                         <span className="tnum kv-hamper-pop absolute top-1 right-1 grid size-6 place-items-center rounded-full border-2 border-paper bg-ink text-[0.75rem] font-bold text-paper sm:size-7">
                           {count}
+                        </span>
+                      )}
+                      {/* Said on the tile as well as dimmed, so it doesn't read as merely disabled. */}
+                      {soldOut && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill border-2 border-ink bg-paper px-2 py-1 font-display text-[0.58rem] leading-none whitespace-nowrap sm:text-[0.68rem]"
+                        >
+                          Sold out
                         </span>
                       )}
                     </button>
