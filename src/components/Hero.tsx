@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import { freeDeliveryLine } from '@/config/delivery'
 import { useCatalog } from '@/context/catalogContext'
 import { cupsIn, perCup } from '@/lib/format'
-import { heroReview } from '@/config/testimonials'
+import { heroRating, heroReview } from '@/config/testimonials'
 import { StarIcon } from './ui/icons'
 
 /**
@@ -136,24 +136,27 @@ export function Hero() {
               <br className="hidden lg:block" /> flavour.
             </h1>
 
-            {/* A customer's line, with their stars, standing where the tagline
+            {/* A customer's line over the score, standing where the tagline
                 was: the proof does the subheading's job. */}
             {heroReview && (
-              <figure className="animate-fade-up mt-[1.2svh] lg:mt-7" style={{ animationDelay: '0.15s' }}>
-                <blockquote className="max-w-[34ch] text-[1.05rem] leading-snug font-medium sm:text-[1.38rem] lg:max-w-[30ch] lg:text-[1.35rem]">
+              <figure className="animate-fade-up mt-[1.3svh] lg:mt-7" style={{ animationDelay: '0.15s' }}>
+                <blockquote className="max-w-[32ch] text-[1.08rem] leading-snug font-medium text-balance sm:text-[1.4rem] lg:max-w-[28ch] lg:text-[1.36rem]">
                   &ldquo;{heroReview.quote}&rdquo;
                 </blockquote>
-                <figcaption className="mt-1.5 flex items-center justify-center gap-2 lg:mt-3 lg:justify-start">
-                  <span className="flex gap-0.5 text-caramel" aria-hidden="true">
-                    {Array.from({ length: heroReview.rating ?? 5 }, (_, index) => (
-                      <StarIcon key={index} className="size-[1.05rem]" />
-                    ))}
-                  </span>
-                  <span className="label text-ink/60">
-                    <span className="sr-only">{heroReview.rating ?? 5} out of 5 stars, </span>
-                    {heroReview.name}
-                  </span>
-                </figcaption>
+                {heroRating && (
+                  <figcaption className="mt-[0.9svh] flex items-center justify-center gap-2 lg:mt-3.5 lg:justify-start">
+                    {/* Packed tight, so the row reads as one mark rather than five. */}
+                    <span className="flex gap-px text-caramel" aria-hidden="true">
+                      {Array.from({ length: heroRating.outOf }, (_, index) => (
+                        <StarIcon key={index} className="size-[1.08rem] sm:size-[1.2rem]" />
+                      ))}
+                    </span>
+                    <span className="tnum text-[0.98rem] leading-none font-semibold sm:text-[1.06rem]">
+                      <span className="sr-only">Rated </span>
+                      {heroRating.score}/{heroRating.outOf}
+                    </span>
+                  </figcaption>
+                )}
               </figure>
             )}
           </div>

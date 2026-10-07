@@ -38,23 +38,36 @@ export interface Testimonial {
 export const testimonials: Testimonial[] = []
 
 /**
- * The single review carried in the hero, as proof under the call to action.
+ * The single review carried in the hero, as proof above the call to action.
  *
  * Real, like everything else in this file — said by a Kelvo customer. They
- * aren't named here because the name wasn't given; add `name` and `context`
- * once you have their permission and it reads as a fuller attribution.
+ * aren't named on the page because the name wasn't given; add `name` and
+ * `context` once you have their permission and it can be shown as a fuller
+ * attribution.
  *
- * The stars are THIS person's rating, not an average of many: there is no
- * review count behind them, so nothing here claims one. Wire a reviews app
- * (and `aggregateRating` structured data) before saying anything is an
- * overall score.
- *
- * Set to null to take it off the hero; nothing else needs changing.
+ * Set to null to take the quote off the hero; nothing else needs changing.
  */
 export const heroReview: Testimonial | null = {
   quote: 'Genuinely better than Starbucks.',
   name: 'A Kelvo customer',
-  rating: 5,
+}
+
+/**
+ * The score shown beside the hero's stars.
+ *
+ * This reads to a shopper as an AVERAGE across customers, not one person's
+ * rating — so keep it in step with what your reviews actually say, and move
+ * it to a reviews app's live figure once one is wired.
+ *
+ * Shown as plain text only. No `aggregateRating` structured data is emitted
+ * for it: search engines treat review markup they can't verify as a penalty
+ * rather than a boost, so the number stays a visual claim on the page.
+ *
+ * Set to null to show the quote and stars without a score.
+ */
+export const heroRating: { score: number; outOf: number } | null = {
+  score: 4.7,
+  outOf: 5,
 }
 
 /* ------------------------------------------------------------------ */
