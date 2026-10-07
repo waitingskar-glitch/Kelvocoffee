@@ -37,6 +37,26 @@ export interface Testimonial {
  */
 export const testimonials: Testimonial[] = []
 
+/**
+ * The single review carried in the hero, as proof under the call to action.
+ *
+ * Real, like everything else in this file — said by a Kelvo customer. They
+ * aren't named here because the name wasn't given; add `name` and `context`
+ * once you have their permission and it reads as a fuller attribution.
+ *
+ * The stars are THIS person's rating, not an average of many: there is no
+ * review count behind them, so nothing here claims one. Wire a reviews app
+ * (and `aggregateRating` structured data) before saying anything is an
+ * overall score.
+ *
+ * Set to null to take it off the hero; nothing else needs changing.
+ */
+export const heroReview: Testimonial | null = {
+  quote: 'Genuinely better than Starbucks.',
+  name: 'A Kelvo customer',
+  rating: 5,
+}
+
 /* ------------------------------------------------------------------ */
 /* Per-product quotes                                                  */
 /* ------------------------------------------------------------------ */

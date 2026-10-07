@@ -6,6 +6,8 @@ import { cn } from '@/lib/cn'
 import { freeDeliveryLine } from '@/config/delivery'
 import { useCatalog } from '@/context/catalogContext'
 import { cupsIn, perCup } from '@/lib/format'
+import { heroReview } from '@/config/testimonials'
+import { StarIcon } from './ui/icons'
 
 /**
  * The three pouches standing across the seam, laid out like the reference:
@@ -134,12 +136,26 @@ export function Hero() {
               <br className="hidden lg:block" /> flavour.
             </h1>
 
-            <p
-              className="animate-fade-up mt-[1svh] max-w-[34ch] text-[1.05rem] leading-snug font-medium sm:text-[1.38rem] lg:mt-7 lg:max-w-[30ch] lg:text-[1.35rem]"
-              style={{ animationDelay: '0.15s' }}
-            >
-              Flavoured coffee concentrate. Add 10&nbsp;ml to hot or cold milk. One cup. Done.
-            </p>
+            {/* A customer's line, with their stars, standing where the tagline
+                was: the proof does the subheading's job. */}
+            {heroReview && (
+              <figure className="animate-fade-up mt-[1.2svh] lg:mt-7" style={{ animationDelay: '0.15s' }}>
+                <blockquote className="max-w-[34ch] text-[1.05rem] leading-snug font-medium sm:text-[1.38rem] lg:max-w-[30ch] lg:text-[1.35rem]">
+                  &ldquo;{heroReview.quote}&rdquo;
+                </blockquote>
+                <figcaption className="mt-1.5 flex items-center justify-center gap-2 lg:mt-3 lg:justify-start">
+                  <span className="flex gap-0.5 text-caramel" aria-hidden="true">
+                    {Array.from({ length: heroReview.rating ?? 5 }, (_, index) => (
+                      <StarIcon key={index} className="size-[1.05rem]" />
+                    ))}
+                  </span>
+                  <span className="label text-ink/60">
+                    <span className="sr-only">{heroReview.rating ?? 5} out of 5 stars, </span>
+                    {heroReview.name}
+                  </span>
+                </figcaption>
+              </figure>
+            )}
           </div>
 
           <div className="animate-fade-up mt-[2svh] lg:mt-10" style={{ animationDelay: '0.25s' }}>
