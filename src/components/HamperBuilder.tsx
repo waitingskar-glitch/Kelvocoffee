@@ -114,7 +114,7 @@ export function HamperBuilder() {
               Build a hamper.
             </h2>
             <p className="mx-auto mt-4 max-w-[30ch] text-[1.05rem] leading-relaxed sm:text-[1.1rem]">
-              Two packs or four. Any flavours, repeats welcome. Build up to {MAX_HAMPERS_PER_ORDER}, each its own way.
+              Pick any 2 or 4. Mix your flavours however you like.
             </p>
             {/* The pricing, said plainly. */}
             <p className="mx-auto mt-5 max-w-[26rem] shape-squircle bg-ink px-5 py-3 text-[0.95rem] leading-snug text-paper">
