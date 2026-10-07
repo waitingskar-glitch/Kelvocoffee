@@ -23,14 +23,25 @@ export function ProductGrid({ onRequestNotify }: Props) {
     <section id="shop" aria-labelledby="shop-heading" className="container-page scroll-mt-24 pt-16 pb-12 sm:py-20">
       <SectionHeading
         id="shop-heading"
+        /* Wider than the shared default: the question runs past 14ch and the
+           intro past 46ch, and both are meant to break where the <br/>s are. */
+        className="[&_h2]:max-w-[22ch] [&_p]:max-w-[54ch]"
         title={
           <>
             Five flavours.
             <br />
-            One pour.
+            What are you feeling?
           </>
         }
-        intro="Same coffee underneath. Pick the one you're in the mood for. 50 ml makes 5 cups, 100 ml makes 10."
+        intro={
+          <>
+            Classic? Sweet? Nutty? You&rsquo;ve got options.
+            <br />
+            Pick a flavour, pour it in, and you&rsquo;re good to go.
+            <br />
+            50&nbsp;ml = 5 cups &middot; 100&nbsp;ml = 10 cups
+          </>
+        }
       />
 
       <div className="mt-12 sm:mt-16">
