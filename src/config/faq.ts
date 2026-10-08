@@ -40,21 +40,25 @@ export const faqs: FaqItem[] = [
   },
   {
     question: 'How many cups is a pack?',
-    answer: 'Ten millilitres makes a cup. So 50 ml is five cups and 100 ml is ten. Go stronger or lighter as you like.',
+    answer:
+      '10 ml makes one cup. So 50 ml gives you 5 cups, and 100 ml gives you 10. Want it stronger? Just pour a little more.',
   },
   {
     question: 'How do I store it, and how long does it keep?',
-    answer: `${brand.storage} ${brand.shelfLife}`,
+    // Said in its own words rather than from brand.storage/shelfLife. Those
+    // still set the formal line on each product page, so keep the two in step.
+    answer:
+      "Pop it in the fridge once you open it. It's good for 6 months from when it's made, and once opened, try to finish it within 10 days.",
   },
   {
     question: 'What goes into the flavours?',
     answer:
-      'Nature-identical flavourings. Classic has none: it is just coffee and chicory. Every ingredient is listed on the pack and on each product page.',
+      'Just the good stuff. Classic is simply coffee and chicory. The other flavours use nature-identical flavouring, and you can find the full ingredient list on every pack.',
   },
   {
     question: 'Which one should I start with?',
     answer:
-      'Build a hamper. Pick any two flavours, or any four, for one flat price. It costs less per cup than single packs, and you find your favourite.',
+      "Can't decide? Start with a hamper. Pick any 2 or 4 flavours, mix them up, and find your favourite. You also get more cups for your money.",
   },
   {
     question: 'What does delivery cost?',
