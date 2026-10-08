@@ -7,6 +7,17 @@ import type { FlavourKey } from './shopify'
  * it. The book is the authority on wording: change it there first.
  */
 
+/**
+ * Shelf life as figures, not prose.
+ *
+ * The pack's formal line and the FAQ's casual one are worded differently but
+ * state the same two numbers, so they read them from here rather than each
+ * spelling them out — change the months or the open window once and both
+ * follow.
+ */
+export const SHELF_LIFE_MONTHS = 9
+export const OPEN_WINDOW_DAYS = 10
+
 export const brand = {
   oneLine: 'Coffee, but make it your flavour.',
   descriptor: ['Flavoured coffee', 'concentrate'] as const,
@@ -24,8 +35,8 @@ export const brand = {
 
   composition: 'Coffee (80%), Chicory (20%)',
   cupRatio: '10 ml = 1 cup',
-  storage: 'Refrigerate after opening.',
-  shelfLife: 'Best before 6 months from date of manufacture. Consume within 10 days of opening.',
+  storage: 'Store at room temperature. No refrigeration needed.',
+  shelfLife: `Best before ${SHELF_LIFE_MONTHS} months from date of manufacture. Consume within ${OPEN_WINDOW_DAYS} days of opening.`,
 
   customerCare: '+91 91366 26006',
   licence: 'Lic. No. 1151803000241',

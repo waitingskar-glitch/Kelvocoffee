@@ -1,4 +1,4 @@
-import { brand } from './brand'
+import { brand, OPEN_WINDOW_DAYS, SHELF_LIFE_MONTHS } from './brand'
 import type { FlavourKey } from './shopify'
 import { DELIVERY_CHARGE, FREE_DELIVERY_FROM } from './delivery'
 
@@ -45,10 +45,10 @@ export const faqs: FaqItem[] = [
   },
   {
     question: 'How do I store it, and how long does it keep?',
-    // Said in its own words rather than from brand.storage/shelfLife. Those
-    // still set the formal line on each product page, so keep the two in step.
-    answer:
-      "Pop it in the fridge once you open it. It's good for 6 months from when it's made, and once opened, try to finish it within 10 days.",
+    // Worded for the FAQ rather than reusing brand.storage/shelfLife, but the
+    // figures come from where those do, so this can't drift from the Storage
+    // and Shelf life lines on the product pages.
+    answer: `No fridge needed — room temperature is fine. It's good for ${SHELF_LIFE_MONTHS} months from when it's made, and once opened, try to finish it within ${OPEN_WINDOW_DAYS} days.`,
   },
   {
     question: 'What goes into the flavours?',
