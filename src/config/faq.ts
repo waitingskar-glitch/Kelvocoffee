@@ -19,21 +19,24 @@ export const faqs: FaqItem[] = [
   // The doubts a first-time buyer has, in the order they come up.
   {
     question: 'Is there alcohol in the Whiskey one?',
-    answer: 'None at all. Whiskey is the flavour, not a spirit. It tastes like whiskey. It is not whiskey.',
+    answer: "Nope. Not a drop. It has the taste of whiskey, but there's no alcohol in it.",
   },
   {
     question: 'Is this instant coffee?',
     answer:
-      "No. It's a liquid concentrate: 80% coffee, 20% chicory. You pour it, you don't dissolve it.",
+      "Not quite. It's coffee concentrate. Just pour it in, add your milk, and you're done. No dissolving, no waiting.",
   },
   {
     question: 'Is it like filter coffee?',
     answer:
-      "It's our take on it: the same coffee and chicory, as a concentrate, so there's no filter and no waiting. Classic is just that. The other four add a flavour.",
+      "Yep, pretty much. It's our take on filter coffee, just without the filter and the wait. Classic tastes like your regular filter coffee, while the other flavours add a little something extra.",
   },
   {
     question: 'How do I make a cup?',
-    answer: `${brand.ritual[0].copy} ${brand.ritual[1].copy} ${brand.ritual[2].copy} Hot or cold, your call.`,
+    // Spelled out rather than built from brand.ritual: the wording is its own
+    // now, so keep the measures here in step if the ritual ever changes.
+    answer:
+      "Easy. Pour 10 ml of Kelvo, add 150 ml of hot or cold milk, add sugar if you want, and stir. That's it. Now drink.",
   },
   {
     question: 'How many cups is a pack?',
