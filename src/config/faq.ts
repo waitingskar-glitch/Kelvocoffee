@@ -63,15 +63,16 @@ export const faqs: FaqItem[] = [
   {
     question: 'What does delivery cost?',
     answer:
-      `Nothing on orders of ₹${FREE_DELIVERY_FROM} and above, anywhere in India. Below that, delivery is a flat ₹${DELIVERY_CHARGE}, added at checkout.`,
+      `Free if your order is ₹${FREE_DELIVERY_FROM} or more. Below that, it's a flat ₹${DELIVERY_CHARGE}. Simple.`,
   },
   {
     question: 'Do you deliver outside India?',
-    answer: "Yes, to a set of countries. It's charged separately and the cost shows at checkout once you add your address.",
+    answer:
+      'Yep, we do. We deliver to select countries outside India. Shipping is calculated at checkout once you add your address.',
   },
   {
     question: "What if something's wrong with my order?",
-    answer: `If it arrives damaged, or isn't what you ordered, call us on ${brand.customerCare} with your order number and we'll replace it or refund it.`,
+    answer: `Don't worry, we'll sort it out. If your order arrives damaged or something's missing, call us on ${brand.customerCare} with your order number. We'll replace it or refund it.`,
   },
 ]
 
